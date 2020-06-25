@@ -97,15 +97,19 @@ public class ExcelTable {
 
         cell = row.createCell(3);
         cell.setCellValue("Recette soirée(fictif)");
-        cell.setCellStyle(cellStyle);
+        cell.setCellStyle(styleDouble);
 
         cell = row.createCell(4);
         cell.setCellValue("Dette soirée(fictif)");
-        cell.setCellStyle(cellStyle);
+        cell.setCellStyle(styleDouble);
 
         cell = row.createCell(5);
         cell.setCellValue("Gain soirée(fictif)");
-        cell.setCellStyle(cellStyle);
+        cell.setCellStyle(styleDouble);
+
+        cell = row.createCell(6);
+        cell.setCellValue("Recette soirée(Réel)");
+        cell.setCellStyle(styleDouble);
 
 
 
@@ -127,38 +131,47 @@ public class ExcelTable {
         cell.setCellStyle(styleDouble);
         cell.setCellValue(0.0);
 
-        //Table for management
+        //Table for management ticket
         Sheet ticketSheet;
         ticketSheet = workbook.createSheet("Contrôle achat ticket");
         row = ticketSheet.createRow(0);
+
         cell = row.createCell(0);
-        cell.setCellValue("Date achat");
+        cell.setCellValue("Nom");
         cell.setCellStyle(cellStyle);
 
         cell = row.createCell(1);
-        cell.setCellValue("Nom, Prénom");
+        cell.setCellValue("Prénom");
         cell.setCellStyle(cellStyle);
 
         cell = row.createCell(2);
-        cell.setCellValue("Nombre ticket acheté");
+        cell.setCellValue("Date dernier achat");
         cell.setCellStyle(cellStyle);
 
         cell = row.createCell(3);
-        cell.setCellValue("Quantité ticket acheté au dernier achat");
+        cell.setCellValue("Nombre tickets achetés");
         cell.setCellStyle(cellStyle);
 
         cell = row.createCell(4);
+        cell.setCellValue("Quantité ticket acheté au dernier achat");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(5);
         cell.setCellValue("Montant");
         cell.setCellStyle(cellStyle);
 
-        cell = row.createCell(6);
+        cell = row.createCell(7);
         cell.setCellValue("Total");
         cell.setCellStyle(cellStyleTotal);
 
+        row=ticketSheet.createRow(1);
+        cell = row.createCell(7);
+        cell.setCellValue(0);
+        cell.setCellStyle(styleDouble);
+
+
         this.wb = workbook;
     }
-
-
 
     public Workbook getOriginal() {
         return this.wb;
@@ -225,8 +238,10 @@ public class ExcelTable {
         Cell cell;
         int lastRow = sheet.getLastRowNum() + 1;
         row = sheet.createRow(lastRow);
+        //name
         cell = row.createCell(0);
         cell.setCellValue(nom);
+        //surname
         cell = row.createCell(1);
         cell.setCellValue(prenom);
         //Repas nb at
@@ -247,6 +262,31 @@ public class ExcelTable {
         cell = row.createCell(5);
         cell.setCellStyle(styleDouble);
         cell.setCellValue(3.0);
+
+        Sheet sheetTicket = workbook.getSheetAt(context.getResources().getInteger(R.integer.controle_achat_ticket));
+
+        lastRow = sheetTicket.getLastRowNum() + 1;
+        row = sheetTicket.createRow(lastRow);
+        //name
+        cell = row.createCell(0);
+        cell.setCellValue(nom);
+        //surname
+        cell = row.createCell(1);
+        cell.setCellValue(prenom);
+        //date last purchase
+        cell = row.createCell(2);
+        cell.setCellValue(0);
+        //nb ticket
+        cell = row.createCell(3);
+        cell.setCellValue(0);
+        //last time quantity
+        cell = row.createCell(4);
+        cell.setCellValue(0);
+        //Montant
+        cell = row.createCell(5);
+        cell.setCellValue(0);
+        cell.setCellStyle(styleDouble);
+
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
         return workbook;
 
@@ -292,15 +332,15 @@ public class ExcelTable {
 
     }
 
-    public static void updateDues(Context context, double montant,String nom, String prenom) {
+    /*public static void updateDues(Context context, double montant,String nom, String prenom) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_membre));
 
         Cell cell;
         Row row = findMember(sheet, nom, prenom);
-    }
+    }*/
 
-    public static Row findMember(Sheet sheet, String nom, String prenom) {
+    public static Row findMember(@NotNull Sheet sheet, String nom, String prenom) {
         Row row = null;
         for (Row r : sheet) {
             if (getCellContent(r, 0).equals(nom)) {
@@ -332,10 +372,19 @@ public class ExcelTable {
         //Repas nb st
         cell = row.createCell(2);
         cell.setCellValue(0);
-        //recette par soirée
+        //recette par soirée fictif
         cell = row.createCell(3);
-        cell.setCellStyle(styleDouble);
         cell.setCellValue(0.0);
+        //dette par soirée fictif
+        cell = row.createCell(4);
+        cell.setCellValue(0.0);
+        //gain par soirée fictif
+        cell = row.createCell(5);
+        cell.setCellValue(0.0);
+        //reccette  soirée reel
+        cell = row.createCell(6);
+        cell.setCellValue(0.0);
+
 
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
@@ -349,30 +398,46 @@ public class ExcelTable {
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_rendu_soiree));
         Row row;
         Cell cell;
-
+        //search row of the evening
         row = findEvening(sheet, date);
-
         //Repas nb at
         cell = row.getCell(1);
         cell.setCellValue(cell.getNumericCellValue() + repasAT);
         //st
         cell = row.getCell(2);
         cell.setCellValue(cell.getNumericCellValue() + repasST);
-        //recette soirée
-        cell = row.getCell(3);
-        double val = cell.getNumericCellValue() + montant;
-        cell.setCellValue(val);
+        //recette soirée fictif
+        double val;
+        if(dette){
+            cell = row.getCell(3);
+            cell.setCellValue(cell.getNumericCellValue()+ montant);
+        }
+        //dette soirée fictif
+        if(!dette){
+            cell = row.getCell(4);
+            cell.setCellValue(cell.getNumericCellValue() + montant);
+        }
+        //gain soirée fictif
+        cell = row.getCell(5);
+        cell.setCellValue(cell.getNumericCellValue() + montant);
+
+        //recette soirée réel
+        if(dette) {
+            cell = row.getCell(6);
+            cell.setCellValue(cell.getNumericCellValue() + montant);
+        }
+
         //tjrs a la ligne 1
         row = sheet.getRow(1);
         //recette totale
-        cell = row.getCell(5);
-        val = cell.getNumericCellValue() + montant;
-        cell.setCellValue(val);
-        //non payé
+        if(dette){
+            cell = row.getCell(8);
+            cell.setCellValue(cell.getNumericCellValue() + montant);
+        }
+        //Dette totale
         if (!dette) {
-            cell = row.getCell(6);
-            val = cell.getNumericCellValue() + montant;
-            cell.setCellValue(val);
+            cell = row.getCell(9);
+            cell.setCellValue(cell.getNumericCellValue() + montant);
         }
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
@@ -394,7 +459,7 @@ public class ExcelTable {
         return true;
     }
 
-    private static Row findEvening(Sheet sheet, String date) {
+    private static Row findEvening(@NotNull Sheet sheet, String date) {
         Row row = null;
         for (Row r : sheet) {
             if (getCellContent(r, 0).equals(date)) {
@@ -404,8 +469,54 @@ public class ExcelTable {
         }
         return row;
     }
+    //////////////////////////////////////////////////////////Comptes ticketé"///////////////////////////////////////////////////////////////////////////////////////::
+    public static Workbook updateTicket(Context context, String nom, String prenom, String date, int nbTicketAchat, double montantTicket, boolean b) {
+        Workbook workbook = readFile(context);
+        Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.controle_achat_ticket));
 
+        Row row;
+        Cell cell;
 
+        row = FindMemberTicketSheet(sheet, nom, prenom);
+
+        //date last purchase
+        cell = row.getCell(2);
+        cell.setCellValue(date);
+        //nb ticket bought
+        cell = row.getCell(3);
+        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(cell.getNumericCellValue()));
+        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(nbTicketAchat));
+        int val = (int)cell.getNumericCellValue() + nbTicketAchat;
+        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(val));
+        cell.setCellValue(val);
+        //last time ticket quantity
+        cell = row.getCell(4);
+        cell.setCellValue(nbTicketAchat);
+        //total ticket money
+        cell = row.getCell(5);
+        cell.setCellValue(cell.getNumericCellValue()+montantTicket);
+
+        //total always at 1st line
+        row = sheet.getRow(1);
+        cell = row.getCell(7);
+        cell.setCellValue(cell.getNumericCellValue()+montantTicket);
+
+        saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
+        return workbook;
+    }
+
+    private static Row FindMemberTicketSheet(Sheet sheet, String nom, String prenom) {
+        Row row = null;
+        for (Row r : sheet) {
+            if (getCellContent(r, 0).equals(nom)) {
+                if (getCellContent(r, 1).equals(prenom)) {
+                    row = r;
+                    break;
+                }
+            }
+        }
+        return row;
+    }
 //////////////////////////////////////////////////////////Manipulation tableau///////////////////////////////////////////////////////////////////////////////////////::
 
     public static String getCellContent(@NotNull Workbook workbook, int sheet, int row, int cell) {
