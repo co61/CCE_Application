@@ -8,4 +8,4 @@ Les gains réel seront aussi enregistré mais de façon gérnérale et les dette
 
 Un fichier .xls sera généré (actuellement dans Stockage Interne/Android/fr.c7regne.cceapplication/data/files/CCETrésoreriesRepas.xls
 
-L'APK est disponible sur ce git en suivant app/build/
+### L'APK est disponible sur ce git en suivant app/build/outputs/apk/debug/apk-debug.apks
