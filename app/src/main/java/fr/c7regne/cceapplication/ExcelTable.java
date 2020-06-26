@@ -195,31 +195,32 @@ public class ExcelTable {
         cell.setCellValue("Remboursement");
         cell.setCellStyle(cellStyle);
 
-        cell = row.createCell(4);
+        cell = row.createCell(5);
         cell.setCellValue("Descriptif");
         cell.setCellStyle(cellStyle);
 
-        cell = row.createCell(6);
+        cell = row.createCell(7);
         cell.setCellValue("Total");
         cell.setCellStyle(cellStyleTotal);
 
-        cell = row.createCell(7);
+        cell = row.createCell(8);
         cell.setCellValue("Total Remboursé");
         cell.setCellStyle(cellStyleTotal);
 
         row = shopSheet.createRow(1);
-        cell = row.createCell(6);
-        cell.setCellValue(0);
+        cell = row.createCell(7);
+        cell.setCellValue(0.0);
         cell.setCellStyle(styleDouble);
 
-        cell = row.createCell(7);
-        cell.setCellValue(0);
+        cell = row.createCell(8);
+        cell.setCellValue(0.0);
         cell.setCellStyle(styleDouble);
 
 
 
         this.wb = workbook;
     }
+
 
     public Workbook getOriginal() {
         return this.wb;
@@ -569,6 +570,56 @@ public class ExcelTable {
             }
         }
         return row;
+    }
+
+//////////////////////////////////////////////////////////Course tableau///////////////////////////////////////////////////////////////////////////////////////::
+
+    public static void createCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse, int numTicketAchatCourse, String descriptifAchatCourse, boolean checkboxAchatCourse) {
+        Workbook workbook = readFile(context);
+        Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.achat_course));
+        CellStyle styleDouble = workbook.createCellStyle();
+        styleDouble.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.0"));
+        Row row;
+        Cell cell;
+        int lastRow = sheet.getLastRowNum() + 1;
+        row = sheet.createRow(lastRow);
+        //date
+        cell = row.createCell(0);
+        cell.setCellValue(fullDate);
+        //nom
+        cell = row.createCell(1);
+        cell.setCellValue(nomAchatCourse);
+        //montant
+        cell = row.createCell(2);
+        cell.setCellValue(montantAchatCourse);
+        //num ticket
+        cell = row.createCell(3);
+        cell.setCellValue(numTicketAchatCourse);
+        //remboursement
+        if (checkboxAchatCourse) {
+            cell = row.createCell(4);
+            cell.setCellValue("Remboursé");
+        }else{
+            cell = row.createCell(4);
+            cell.setCellValue("Non Remboursé");
+        }
+        //descriptif
+        cell = row.createCell(5);
+        cell.setCellValue(descriptifAchatCourse);
+
+        row = sheet.getRow(1);
+        //Total course
+        cell = row.getCell(7);
+        cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
+        if(checkboxAchatCourse){
+            cell = row.getCell(8);
+            cell.setCellValue(montantAchatCourse);
+        }
+
+
+
+
+        saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
     }
 //////////////////////////////////////////////////////////Manipulation tableau///////////////////////////////////////////////////////////////////////////////////////::
 

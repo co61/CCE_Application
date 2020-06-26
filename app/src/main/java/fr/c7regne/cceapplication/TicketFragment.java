@@ -51,7 +51,7 @@ public class TicketFragment extends Fragment {
 
     //acces to component on view to update excel file
     private Button newMemberButton, createMemberButton, buttonValidationAT, buttonValidationST, ajoutticket, buttonRembourserST, buttonRembourserAT;
-    private EditText nomAT, prenomAT, nomST, prenomST, nomnewMember, prenomnewMember, montantST, montantDetteRemboursementST, montantDetteRemboursementAT, reducctionTicket;
+    private EditText nomnewMember, prenomnewMember, montantST, montantDetteRemboursementST, montantDetteRemboursementAT, reducctionTicket;
     private TextView nbRepasAT, nbRepasST, montantAT, nbticketinfo, detteinfoAT, detteinfoST, nbTicketAchat;
     private CheckBox checkBoxST, checkboxAT;
     private ImageView minusAT, minusST, plusAT, plusST, minusAchaTicket, plusAchaTicket;
@@ -261,7 +261,7 @@ public class TicketFragment extends Fragment {
                                 if (montant != 0) {
                                     r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
                                     ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
-                                    ExcelTable.updateEvening(getContext(),fullDate,0,0,montant,true,true);
+                                    ExcelTable.updateEvening(getContext(), fullDate, 0, 0, montant, true, true);
                                     detteinfoAT.setText("Dette : " + r.getCell(4).getNumericCellValue());
                                     montantDetteRemboursementAT.setText("0.0");
                                     //spinners = spinnerView();
@@ -325,46 +325,43 @@ public class TicketFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String item = parent.getSelectedItem().toString();
-                //Toast.makeText(getContext(), item, Toast.LENGTH_SHORT).show();
-                //if "nouvô" > newMember creation access
+                //if not "Sélectionner une personne" > action possible
+                if (!item.equals("Sélectionner une personne")) {
+                    buttonValidationST.setClickable(true);
+                    ldetteSt.setVisibility(View.VISIBLE);
+                    final Workbook workbook = ExcelTable.readFile(getContext());
+                    Sheet s = workbook.getSheetAt(getResources().getInteger(R.integer.compte_membre));
+                    final Row r = ExcelTable.findMember(s, item.split("-")[0], item.split("-")[1]);
 
-                    //if not "Sélectionner une personne" > action possible
-                    if (!item.equals("Sélectionner une personne")) {
-                        buttonValidationST.setClickable(true);
-                        ldetteSt.setVisibility(View.VISIBLE);
-                        final Workbook workbook = ExcelTable.readFile(getContext());
-                        Sheet s = workbook.getSheetAt(getResources().getInteger(R.integer.compte_membre));
-                        final Row r = ExcelTable.findMember(s, item.split("-")[0], item.split("-")[1]);
-
-                        detteinfoST.setText("Dette : " + r.getCell(4).getNumericCellValue());
-                        if (r.getCell(4).getNumericCellValue() == 0) {
-                            montantDetteRemboursementST.setEnabled(false);
-                            buttonRembourserST.setClickable(false);
-                        } else {
-                            montantDetteRemboursementST.setEnabled(true);
-                            buttonRembourserST.setClickable(true);
-                            buttonRembourserST.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    double montant = Double.parseDouble(montantDetteRemboursementST.getText().toString());
-                                    if (montant != 0) {
-                                        r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
-                                        ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
-                                        ExcelTable.updateEvening(getContext(),fullDate,0,0,montant,true,true);
-                                        detteinfoST.setText("Dette : " + r.getCell(4).getNumericCellValue());
-                                        montantDetteRemboursementST.setText("0.0");
-                                        hideKeyboardFrom(getContext(), v);
-                                        Toast.makeText(getContext(), "Remboursement effectué", Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        Toast.makeText(getContext(), "Entre un montant", Toast.LENGTH_SHORT).show();
-                                    }
+                    detteinfoST.setText("Dette : " + r.getCell(4).getNumericCellValue());
+                    if (r.getCell(4).getNumericCellValue() == 0) {
+                        montantDetteRemboursementST.setEnabled(false);
+                        buttonRembourserST.setClickable(false);
+                    } else {
+                        montantDetteRemboursementST.setEnabled(true);
+                        buttonRembourserST.setClickable(true);
+                        buttonRembourserST.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                double montant = Double.parseDouble(montantDetteRemboursementST.getText().toString());
+                                if (montant != 0) {
+                                    r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
+                                    ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
+                                    ExcelTable.updateEvening(getContext(), fullDate, 0, 0, montant, true, true);
+                                    detteinfoST.setText("Dette : " + r.getCell(4).getNumericCellValue());
+                                    montantDetteRemboursementST.setText("0.0");
+                                    hideKeyboardFrom(getContext(), v);
+                                    Toast.makeText(getContext(), "Remboursement effectué", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getContext(), "Entre un montant", Toast.LENGTH_SHORT).show();
                                 }
-                            });
-                        }
-                    } else {// if not > no action
-                        buttonValidationST.setClickable(false);
-                        ldetteSt.setVisibility(View.GONE);
+                            }
+                        });
                     }
+                } else {// if not > no action
+                    buttonValidationST.setClickable(false);
+                    ldetteSt.setVisibility(View.GONE);
+                }
 
 
             }
@@ -379,18 +376,18 @@ public class TicketFragment extends Fragment {
                 if (spinners[1].getSelectedItem().toString().equals("Sélectionner une personne")) {
                     Toast.makeText(getContext(), "Veuillez sélectionner une personne éxistante ou Nouvô pour créer un nouveau compte", Toast.LENGTH_SHORT).show();
                 } else {
-                        //update member sheet
-                        ExcelTable.updateMember(getContext(), spinners[1].getSelectedItem().toString().split("-")[0], spinners[1].getSelectedItem().toString().split("-")[1],
-                                0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked());
-                        //update evening sheet
-                        ExcelTable.updateEvening(getContext(), fullDate,
-                                0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked(),false);
-                        nbRepasST.setText("1");
-                        montantST.setText(getResources().getString(R.string.prix_repas));
-                        checkBoxST.setChecked(true);
-                        hideKeyboardFrom(getContext(), v);
-                        spinners = spinnerView();
-                    }
+                    //update member sheet
+                    ExcelTable.updateMember(getContext(), spinners[1].getSelectedItem().toString().split("-")[0], spinners[1].getSelectedItem().toString().split("-")[1],
+                            0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked());
+                    //update evening sheet
+                    ExcelTable.updateEvening(getContext(), fullDate,
+                            0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked(), false);
+                    nbRepasST.setText("1");
+                    montantST.setText(getResources().getString(R.string.prix_repas));
+                    checkBoxST.setChecked(true);
+                    hideKeyboardFrom(getContext(), v);
+                    spinners = spinnerView();
+                }
 
 
             }

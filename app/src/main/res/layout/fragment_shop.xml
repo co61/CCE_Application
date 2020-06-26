@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -11,7 +12,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10sp"
+            android:layout_marginBottom="10dp"
             android:text="Achat course"
             android:textColor="@android:color/black"
             android:textSize="28sp" />
@@ -19,7 +20,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10sp"
+            android:layout_marginBottom="10dp"
             android:text="Ajouts"
             android:textColor="@android:color/black"
             android:textSize="24sp" />
@@ -36,39 +37,54 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
-            android:inputType="numberDecimal"
-            android:hint="Montant" />
+            android:hint="Montant"
+            android:inputType="numberDecimal" />
 
         <EditText
             android:id="@+id/numTicketAchatCourse"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
-            android:inputType="number"
-            android:hint="N° Ticket de caisse" />
+            android:hint="N° Ticket de caisse"
+            android:inputType="number" />
 
         <EditText
-            android:id="@+id/nomnewMember"
+            android:id="@+id/descriptifAchatCourse"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
             android:hint="Descriptif" />
 
+        <CheckBox
+            android:id="@+id/checkboxAchatCourse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:checked="true"
+            android:text="Payé" />
+
+        <Button
+            android:id="@+id/buttonValidationAchatCourse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginHorizontal="10dp"
+            android:text="Valider" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10sp"
+            android:paddingTop="20dp"
             android:text="Remboursement"
             android:textColor="@android:color/black"
             android:textSize="24sp" />
 
-        <Spinner
-            android:id="@+id/spinner"
+
+        <ListView
+            android:id="@+id/listViewCourse"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:drawable/btn_dropdown"
-            android:spinnerMode="dialog"
-            android:textColor="@android:color/black" />
+            android:layout_height="wrap_content"/>
+
 
 
     </LinearLayout>
