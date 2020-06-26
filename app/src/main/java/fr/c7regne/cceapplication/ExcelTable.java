@@ -11,6 +11,7 @@ import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -97,19 +98,19 @@ public class ExcelTable {
 
         cell = row.createCell(3);
         cell.setCellValue("Recette soirée(fictif)");
-        cell.setCellStyle(styleDouble);
+        cell.setCellStyle(cellStyle);
 
         cell = row.createCell(4);
         cell.setCellValue("Dette soirée(fictif)");
-        cell.setCellStyle(styleDouble);
+        cell.setCellStyle(cellStyle);
 
         cell = row.createCell(5);
         cell.setCellValue("Gain soirée(fictif)");
-        cell.setCellStyle(styleDouble);
+        cell.setCellStyle(cellStyle);
 
         cell = row.createCell(6);
         cell.setCellValue("Recette soirée(Réel)");
-        cell.setCellStyle(styleDouble);
+        cell.setCellStyle(cellStyle);
 
 
 
@@ -168,6 +169,53 @@ public class ExcelTable {
         cell = row.createCell(7);
         cell.setCellValue(0);
         cell.setCellStyle(styleDouble);
+
+        //Table for management shopping
+        Sheet shopSheet;
+        shopSheet = workbook.createSheet("Course");
+        row = shopSheet.createRow(0);
+
+        cell = row.createCell(0);
+        cell.setCellValue("Date");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(1);
+        cell.setCellValue("Nom");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(2);
+        cell.setCellValue("Montant");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(3);
+        cell.setCellValue("N° Ticket de caisse");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(4);
+        cell.setCellValue("Remboursement");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(4);
+        cell.setCellValue("Descriptif");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(6);
+        cell.setCellValue("Total");
+        cell.setCellStyle(cellStyleTotal);
+
+        cell = row.createCell(7);
+        cell.setCellValue("Total Remboursé");
+        cell.setCellStyle(cellStyleTotal);
+
+        row = shopSheet.createRow(1);
+        cell = row.createCell(6);
+        cell.setCellValue(0);
+        cell.setCellStyle(styleDouble);
+
+        cell = row.createCell(7);
+        cell.setCellValue(0);
+        cell.setCellStyle(styleDouble);
+
 
 
         this.wb = workbook;
@@ -393,7 +441,7 @@ public class ExcelTable {
     }
 
     @NotNull
-    public static Workbook updateEvening(Context context, String date, int repasAT, int repasST, double montant, boolean dette) {
+    public static Workbook updateEvening(Context context, String date, int repasAT, int repasST, double montant, boolean dette, boolean remboursement) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_rendu_soiree));
         Row row;
@@ -408,7 +456,7 @@ public class ExcelTable {
         cell.setCellValue(cell.getNumericCellValue() + repasST);
         //recette soirée fictif
         double val;
-        if(dette){
+        if(dette && !remboursement){
             cell = row.getCell(3);
             cell.setCellValue(cell.getNumericCellValue()+ montant);
         }
@@ -418,11 +466,12 @@ public class ExcelTable {
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //gain soirée fictif
-        cell = row.getCell(5);
-        cell.setCellValue(cell.getNumericCellValue() + montant);
-
+        if(!remboursement) {
+            cell = row.getCell(5);
+            cell.setCellValue(cell.getNumericCellValue() + montant);
+        }
         //recette soirée réel
-        if(dette) {
+        if(dette || remboursement) {
             cell = row.getCell(6);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
@@ -430,7 +479,7 @@ public class ExcelTable {
         //tjrs a la ligne 1
         row = sheet.getRow(1);
         //recette totale
-        if(dette){
+        if(dette || remboursement){
             cell = row.getCell(8);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
@@ -438,6 +487,10 @@ public class ExcelTable {
         if (!dette) {
             cell = row.getCell(9);
             cell.setCellValue(cell.getNumericCellValue() + montant);
+        }
+        if (remboursement) {
+            cell = row.getCell(9);
+            cell.setCellValue(cell.getNumericCellValue() - montant);
         }
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));

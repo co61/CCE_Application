@@ -241,7 +241,7 @@ public class TicketFragment extends Fragment {
                             nbTicketAchat.setText("7");
                             reducctionTicket.setText("21");
                             hideKeyboardFrom(getContext(), v);
-                            spinners = spinnerView();
+                            //spinners = spinnerView();
                             Toast.makeText(getContext(), "Ticket ajouté", Toast.LENGTH_SHORT).show();
                         }
                     });
@@ -261,9 +261,10 @@ public class TicketFragment extends Fragment {
                                 if (montant != 0) {
                                     r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
                                     ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
+                                    ExcelTable.updateEvening(getContext(),fullDate,0,0,montant,true,true);
                                     detteinfoAT.setText("Dette : " + r.getCell(4).getNumericCellValue());
                                     montantDetteRemboursementAT.setText("0.0");
-                                    spinners = spinnerView();
+                                    //spinners = spinnerView();
                                     hideKeyboardFrom(getContext(), v);
                                     Toast.makeText(getContext(), "Remboursement effectué", Toast.LENGTH_SHORT).show();
                                 } else {
@@ -301,7 +302,7 @@ public class TicketFragment extends Fragment {
                                 Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true);
                         //update evening sheet
                         ExcelTable.updateEvening(getContext(), fullDate,
-                                Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true);
+                                Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true, false);
                         nbRepasAT.setText("1");
                         montantAT.setText(getResources().getString(R.string
 
@@ -349,6 +350,7 @@ public class TicketFragment extends Fragment {
                                     if (montant != 0) {
                                         r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
                                         ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
+                                        ExcelTable.updateEvening(getContext(),fullDate,0,0,montant,true,true);
                                         detteinfoST.setText("Dette : " + r.getCell(4).getNumericCellValue());
                                         montantDetteRemboursementST.setText("0.0");
                                         hideKeyboardFrom(getContext(), v);
@@ -377,13 +379,12 @@ public class TicketFragment extends Fragment {
                 if (spinners[1].getSelectedItem().toString().equals("Sélectionner une personne")) {
                     Toast.makeText(getContext(), "Veuillez sélectionner une personne éxistante ou Nouvô pour créer un nouveau compte", Toast.LENGTH_SHORT).show();
                 } else {
-
                         //update member sheet
                         ExcelTable.updateMember(getContext(), spinners[1].getSelectedItem().toString().split("-")[0], spinners[1].getSelectedItem().toString().split("-")[1],
                                 0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked());
                         //update evening sheet
                         ExcelTable.updateEvening(getContext(), fullDate,
-                                0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked());
+                                0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked(),false);
                         nbRepasST.setText("1");
                         montantST.setText(getResources().getString(R.string.prix_repas));
                         checkBoxST.setChecked(true);
