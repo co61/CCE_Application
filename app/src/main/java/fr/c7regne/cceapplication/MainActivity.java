@@ -114,11 +114,11 @@ public class MainActivity extends AppCompatActivity {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         homeFragment = new HomeFragment();
         ticketFragment = new TicketFragment();
-        paymentFragment = new PaymentFragment();
+        //paymentFragment = new PaymentFragment();
         shopFragment = new ShopFragment();
         adapter.addFragment(homeFragment);
         adapter.addFragment(ticketFragment);
-        adapter.addFragment(paymentFragment);
+        //adapter.addFragment(paymentFragment);
         adapter.addFragment(shopFragment);
         viewPager.setAdapter(adapter);
     }
@@ -134,20 +134,20 @@ public class MainActivity extends AppCompatActivity {
                     switch (menuItem.getItemId()) {
                         case R.id.nav_home:
                             viewPager.setCurrentItem(0);
-                            toolbar.setTitle("CCE Home");
+                            //toolbar.setTitle("CCE Home");
 
                             break;
                         case R.id.nav_ticket:
                             viewPager.setCurrentItem(1);
-                            toolbar.setTitle("Ticket");
+                            //toolbar.setTitle("Ticket");
                             break;
-                        case R.id.nav_pay:
+                        /*case R.id.nav_pay:
                             viewPager.setCurrentItem(2);
                             toolbar.setTitle("Payement");
-                            break;
+                            break;*/
                         case R.id.nav_shop:
-                            viewPager.setCurrentItem(3);
-                            toolbar.setTitle("Course");
+                            viewPager.setCurrentItem(2);
+                            //toolbar.setTitle("Course");
                             break;
                     }
                     return true;

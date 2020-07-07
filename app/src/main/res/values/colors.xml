@@ -3,8 +3,10 @@
     <color name="colorPrimary">#FFEBEB</color>
     <color name="colorPrimaryDark">#7E3F98</color>
     <color name="colorAccent">#851E36</color>
-    <color name="ColorItem">#A80C00</color>
+    <color name="ColorItem">#C81709</color>
     <color name="colorBottomBar">#24AAD5</color>
     <color name="colorBackgroundFragment">#CCFBFF</color>
+    <color name="colorBackgroundExcelTableTitle">#4f81bd</color>
+    <color name="colorBackgroundExcelTableTotal">#ffff00</color>
 
 </resources>

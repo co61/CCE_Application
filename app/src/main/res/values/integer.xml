@@ -2,6 +2,7 @@
     <integer name="compte_membre">0</integer>
     <integer name="compte_rendu_soiree">1</integer>
     <integer name="controle_achat_ticket">2</integer>
+    <integer name="achat_course">3</integer>
 
     <integer name="prix_repas">3</integer>
 

@@ -11,6 +11,7 @@ import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -97,19 +98,19 @@ public class ExcelTable {
 
         cell = row.createCell(3);
         cell.setCellValue("Recette soirée(fictif)");
-        cell.setCellStyle(styleDouble);
+        cell.setCellStyle(cellStyle);
 
         cell = row.createCell(4);
         cell.setCellValue("Dette soirée(fictif)");
-        cell.setCellStyle(styleDouble);
+        cell.setCellStyle(cellStyle);
 
         cell = row.createCell(5);
         cell.setCellValue("Gain soirée(fictif)");
-        cell.setCellStyle(styleDouble);
+        cell.setCellStyle(cellStyle);
 
         cell = row.createCell(6);
         cell.setCellValue("Recette soirée(Réel)");
-        cell.setCellStyle(styleDouble);
+        cell.setCellStyle(cellStyle);
 
 
 
@@ -169,9 +170,57 @@ public class ExcelTable {
         cell.setCellValue(0);
         cell.setCellStyle(styleDouble);
 
+        //Table for management shopping
+        Sheet shopSheet;
+        shopSheet = workbook.createSheet("Course");
+        row = shopSheet.createRow(0);
+
+        cell = row.createCell(0);
+        cell.setCellValue("Date");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(1);
+        cell.setCellValue("Nom");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(2);
+        cell.setCellValue("Montant");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(3);
+        cell.setCellValue("N° Ticket de caisse");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(4);
+        cell.setCellValue("Remboursement");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(5);
+        cell.setCellValue("Descriptif");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(7);
+        cell.setCellValue("Total");
+        cell.setCellStyle(cellStyleTotal);
+
+        cell = row.createCell(8);
+        cell.setCellValue("Total Remboursé");
+        cell.setCellStyle(cellStyleTotal);
+
+        row = shopSheet.createRow(1);
+        cell = row.createCell(7);
+        cell.setCellValue(0.0);
+        cell.setCellStyle(styleDouble);
+
+        cell = row.createCell(8);
+        cell.setCellValue(0.0);
+        cell.setCellStyle(styleDouble);
+
+
 
         this.wb = workbook;
     }
+
 
     public Workbook getOriginal() {
         return this.wb;
@@ -393,7 +442,7 @@ public class ExcelTable {
     }
 
     @NotNull
-    public static Workbook updateEvening(Context context, String date, int repasAT, int repasST, double montant, boolean dette) {
+    public static Workbook updateEvening(Context context, String date, int repasAT, int repasST, double montant, boolean dette, boolean remboursement) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_rendu_soiree));
         Row row;
@@ -408,7 +457,7 @@ public class ExcelTable {
         cell.setCellValue(cell.getNumericCellValue() + repasST);
         //recette soirée fictif
         double val;
-        if(dette){
+        if(dette && !remboursement){
             cell = row.getCell(3);
             cell.setCellValue(cell.getNumericCellValue()+ montant);
         }
@@ -418,11 +467,12 @@ public class ExcelTable {
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //gain soirée fictif
-        cell = row.getCell(5);
-        cell.setCellValue(cell.getNumericCellValue() + montant);
-
+        if(!remboursement) {
+            cell = row.getCell(5);
+            cell.setCellValue(cell.getNumericCellValue() + montant);
+        }
         //recette soirée réel
-        if(dette) {
+        if(dette || remboursement) {
             cell = row.getCell(6);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
@@ -430,7 +480,7 @@ public class ExcelTable {
         //tjrs a la ligne 1
         row = sheet.getRow(1);
         //recette totale
-        if(dette){
+        if(dette || remboursement){
             cell = row.getCell(8);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
@@ -438,6 +488,10 @@ public class ExcelTable {
         if (!dette) {
             cell = row.getCell(9);
             cell.setCellValue(cell.getNumericCellValue() + montant);
+        }
+        if (remboursement) {
+            cell = row.getCell(9);
+            cell.setCellValue(cell.getNumericCellValue() - montant);
         }
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
@@ -459,15 +513,14 @@ public class ExcelTable {
         return true;
     }
 
-    private static Row findEvening(@NotNull Sheet sheet, String date) {
+    public static Row findEvening(@NotNull Sheet sheet, String date) {
         Row row = null;
         for (Row r : sheet) {
             if (getCellContent(r, 0).equals(date)) {
-                row = r;
-                break;
+                return r;
             }
         }
-        return row;
+        return null;
     }
     //////////////////////////////////////////////////////////Comptes ticketé"///////////////////////////////////////////////////////////////////////////////////////::
     public static Workbook updateTicket(Context context, String nom, String prenom, String date, int nbTicketAchat, double montantTicket, boolean b) {
@@ -484,10 +537,7 @@ public class ExcelTable {
         cell.setCellValue(date);
         //nb ticket bought
         cell = row.getCell(3);
-        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(cell.getNumericCellValue()));
-        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(nbTicketAchat));
         int val = (int)cell.getNumericCellValue() + nbTicketAchat;
-        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(val));
         cell.setCellValue(val);
         //last time ticket quantity
         cell = row.getCell(4);
@@ -512,6 +562,103 @@ public class ExcelTable {
                 if (getCellContent(r, 1).equals(prenom)) {
                     row = r;
                     break;
+                }
+            }
+        }
+        return row;
+    }
+
+//////////////////////////////////////////////////////////Course tableau///////////////////////////////////////////////////////////////////////////////////////::
+
+    public static void createCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse, int numTicketAchatCourse, String descriptifAchatCourse, boolean checkboxAchatCourse) {
+        Workbook workbook = readFile(context);
+        Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.achat_course));
+        CellStyle styleDouble = workbook.createCellStyle();
+        styleDouble.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.0"));
+        Row row;
+        Cell cell;
+
+        CellStyle styleColorTrue = workbook.createCellStyle();
+        styleColorTrue.setFillBackgroundColor(HSSFColor.GREEN.index);
+        styleColorTrue.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+
+        CellStyle styleColorFalse = workbook.createCellStyle();
+        styleColorFalse.setFillBackgroundColor(HSSFColor.RED.index);
+        styleColorFalse.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+        int lastRow = sheet.getLastRowNum() + 1;
+        row = sheet.createRow(lastRow);
+        //date
+        cell = row.createCell(0);
+        cell.setCellValue(fullDate);
+        //nom
+        cell = row.createCell(1);
+        cell.setCellValue(nomAchatCourse);
+        //montant
+        cell = row.createCell(2);
+        cell.setCellValue(montantAchatCourse);
+        //num ticket
+        cell = row.createCell(3);
+        cell.setCellValue(numTicketAchatCourse);
+        //remboursement
+        if (checkboxAchatCourse) {
+            cell = row.createCell(4);
+            cell.setCellValue("Remboursé");
+            cell.setCellStyle(styleColorTrue);
+        }else{
+            cell = row.createCell(4);
+            cell.setCellValue("Non Remboursé");
+            cell.setCellStyle(styleColorFalse);
+        }
+        //descriptif
+        cell = row.createCell(5);
+        cell.setCellValue(descriptifAchatCourse);
+
+        row = sheet.getRow(1);
+        //Total course
+        cell = row.getCell(7);
+        cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
+        if(checkboxAchatCourse){
+            cell = row.getCell(8);
+            cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
+        }
+
+        saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
+    }
+
+    public static void updateCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse) {
+        Workbook workbook = readFile(context);
+        Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.achat_course));
+        Row row;
+        Cell cell;
+        CellStyle styleColorTrue = workbook.createCellStyle();
+        styleColorTrue.setFillBackgroundColor(HSSFColor.GREEN.index);
+        styleColorTrue.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+        Log.i("eaaaaaaaaaaaaaaaaaaa",fullDate+nomAchatCourse+montantAchatCourse);
+        row = findCourse(sheet,fullDate,nomAchatCourse,montantAchatCourse);
+
+        //remboursement
+        cell = row.getCell(4);
+        cell.setCellValue("Remboursé");
+        cell.setCellStyle(styleColorTrue);
+
+        row = sheet.getRow(1);
+        //Total course remboursé
+        cell = row.getCell(8);
+        cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
+
+
+        saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
+    }
+
+    private static Row findCourse(Sheet sheet, String date, String prenom, double montant) {
+        Row row = null;
+        for (Row r : sheet) {
+            if (getCellContent(r, 0).equals(date)) {
+                if (getCellContent(r, 1).equals(prenom)) {
+                    if (r.getCell(2).getNumericCellValue()==montant) {
+                        row = r;
+                        break;
+                    }
                 }
             }
         }

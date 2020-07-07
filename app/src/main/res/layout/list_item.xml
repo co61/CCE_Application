@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/list_item_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="15dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="0.65"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/list_item_datesoiree"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date Soirée"
+                android:textSize="20sp" />
+            <TextView
+                android:id="@+id/list_item_nomsoiree"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nom Soirée"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/list_item_dette"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dette : " />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/list_item_btn"
+            android:layout_width="0dp"
+            android:layout_weight="0.35"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Rembourser" />
+    </LinearLayout>
+</LinearLayout>
