@@ -513,15 +513,14 @@ public class ExcelTable {
         return true;
     }
 
-    private static Row findEvening(@NotNull Sheet sheet, String date) {
+    public static Row findEvening(@NotNull Sheet sheet, String date) {
         Row row = null;
         for (Row r : sheet) {
             if (getCellContent(r, 0).equals(date)) {
-                row = r;
-                break;
+                return r;
             }
         }
-        return row;
+        return null;
     }
     //////////////////////////////////////////////////////////Comptes ticketé"///////////////////////////////////////////////////////////////////////////////////////::
     public static Workbook updateTicket(Context context, String nom, String prenom, String date, int nbTicketAchat, double montantTicket, boolean b) {
@@ -538,10 +537,7 @@ public class ExcelTable {
         cell.setCellValue(date);
         //nb ticket bought
         cell = row.getCell(3);
-        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(cell.getNumericCellValue()));
-        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(nbTicketAchat));
         int val = (int)cell.getNumericCellValue() + nbTicketAchat;
-        Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(val));
         cell.setCellValue(val);
         //last time ticket quantity
         cell = row.getCell(4);
@@ -581,6 +577,14 @@ public class ExcelTable {
         styleDouble.setDataFormat(HSSFDataFormat.getBuiltinFormat("0.0"));
         Row row;
         Cell cell;
+
+        CellStyle styleColorTrue = workbook.createCellStyle();
+        styleColorTrue.setFillBackgroundColor(HSSFColor.GREEN.index);
+        styleColorTrue.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+
+        CellStyle styleColorFalse = workbook.createCellStyle();
+        styleColorFalse.setFillBackgroundColor(HSSFColor.RED.index);
+        styleColorFalse.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
         int lastRow = sheet.getLastRowNum() + 1;
         row = sheet.createRow(lastRow);
         //date
@@ -599,9 +603,11 @@ public class ExcelTable {
         if (checkboxAchatCourse) {
             cell = row.createCell(4);
             cell.setCellValue("Remboursé");
+            cell.setCellStyle(styleColorTrue);
         }else{
             cell = row.createCell(4);
             cell.setCellValue("Non Remboursé");
+            cell.setCellStyle(styleColorFalse);
         }
         //descriptif
         cell = row.createCell(5);
@@ -613,13 +619,50 @@ public class ExcelTable {
         cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
         if(checkboxAchatCourse){
             cell = row.getCell(8);
-            cell.setCellValue(montantAchatCourse);
+            cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
         }
 
+        saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
+    }
 
+    public static void updateCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse) {
+        Workbook workbook = readFile(context);
+        Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.achat_course));
+        Row row;
+        Cell cell;
+        CellStyle styleColorTrue = workbook.createCellStyle();
+        styleColorTrue.setFillBackgroundColor(HSSFColor.GREEN.index);
+        styleColorTrue.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
+        Log.i("eaaaaaaaaaaaaaaaaaaa",fullDate+nomAchatCourse+montantAchatCourse);
+        row = findCourse(sheet,fullDate,nomAchatCourse,montantAchatCourse);
+
+        //remboursement
+        cell = row.getCell(4);
+        cell.setCellValue("Remboursé");
+        cell.setCellStyle(styleColorTrue);
+
+        row = sheet.getRow(1);
+        //Total course remboursé
+        cell = row.getCell(8);
+        cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
 
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
+    }
+
+    private static Row findCourse(Sheet sheet, String date, String prenom, double montant) {
+        Row row = null;
+        for (Row r : sheet) {
+            if (getCellContent(r, 0).equals(date)) {
+                if (getCellContent(r, 1).equals(prenom)) {
+                    if (r.getCell(2).getNumericCellValue()==montant) {
+                        row = r;
+                        break;
+                    }
+                }
+            }
+        }
+        return row;
     }
 //////////////////////////////////////////////////////////Manipulation tableau///////////////////////////////////////////////////////////////////////////////////////::
 

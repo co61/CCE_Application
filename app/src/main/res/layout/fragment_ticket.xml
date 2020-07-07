@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#5BA1F8"
+    android:background="@drawable/gradient"
     android:orientation="vertical"
     >
 
@@ -49,6 +49,7 @@
                 android:layout_height="wrap_content"
                 android:paddingBottom="15sp"
                 android:text="Réservation repas"
+                android:textStyle="bold"
                 android:textColor="@android:color/black"
                 android:textSize="28sp"
                 android:background="#A859F4"/>

@@ -3,17 +3,17 @@ package fr.c7regne.cceapplication;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -24,12 +24,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -48,7 +47,8 @@ public class ShopFragment extends Fragment {
     private Spinner spinner;
     private ListView listViewCourse;
 
-    private ArrayList<String> data = new ArrayList<String>();
+    private ArrayList<String> data = new ArrayList<>();
+    ListView lv;
 
     //firstly, we create the view
     @SuppressLint("SimpleDateFormat")
@@ -63,21 +63,18 @@ public class ShopFragment extends Fragment {
         descriptifAchatCourse=v.findViewById(R.id.descriptifAchatCourse);
         checkboxAchatCourse=v.findViewById(R.id.checkboxAchatCourse);
         buttonValidationAchatCourse=v.findViewById(R.id.buttonValidationAchatCourse);
-
-        final LinearLayout lremboursement = v.findViewById(R.id.lremboursement);
-        remboursementAchatCourse=v.findViewById(R.id.remboursementAchatCourse);
-        buttonRemboursementAchatCourse=v.findViewById(R.id.buttonRemboursementAchatCourse);
+        lv = (ListView) v.findViewById(R.id.listViewCourse);
 
         calendar = Calendar.getInstance();
         fullDate = new SimpleDateFormat("dd/MMMM/yyyy").format(calendar.getTime());
 
-        spinner=spinnerView();
+
         buttonValidationAchatCourse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(montantAchatCourse.getText().toString() != null){
+                if(!montantAchatCourse.getText().toString().equals("")){
                     int nTicketAchatCourse=0;
-                    if(numTicketAchatCourse.getText().toString()!=null){
+                    if(!numTicketAchatCourse.getText().toString().equals("")){
                         nTicketAchatCourse=Integer.parseInt(numTicketAchatCourse.getText().toString());
                     }
                     ExcelTable.createCourse(getContext(), fullDate,
@@ -87,6 +84,8 @@ public class ShopFragment extends Fragment {
                             descriptifAchatCourse.getText().toString(),
                             checkboxAchatCourse.isChecked());
                     hideKeyboardFrom(getContext(),v);
+                    generateListContent();
+                    lv.setAdapter(new MyListAdaper(getContext(), R.layout.list_item, data));
                     Toast.makeText(getContext(), "Course ajoutée", Toast.LENGTH_SHORT).show();
                 }else {
                     Toast.makeText(getContext(), "Veuillez rentrer au moins un montant", Toast.LENGTH_SHORT).show();
@@ -94,30 +93,8 @@ public class ShopFragment extends Fragment {
             }
         });
 
-        /*spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String item = parent.getSelectedItem().toString();
-                //if not "Sélectionner une personne" > action possible
-                if (!item.equals("Sélectionner une course")) {
-                    lremboursement.setVisibility(View.VISIBLE);
-                    final Workbook workbook = ExcelTable.readFile(getContext());
-                    Sheet s = workbook.getSheetAt(getResources().getInteger(R.integer.achat_course));
-                    final Row r = ExcelTable.findMember(s, item.split(" ~ ")[0], item.split(" ~ ")[1]);
-
-                } else {// if not > no action
-                    lremboursement.setVisibility(View.GONE);
-                }
 
 
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });*/
-        ListView lv = (ListView) v.findViewById(R.id.listViewCourse);
         generateListContent();
         lv.setAdapter(new MyListAdaper(getContext(), R.layout.list_item, data));
 
@@ -128,65 +105,12 @@ public class ShopFragment extends Fragment {
         Workbook workbook = ExcelTable.readFile(getContext());
         Sheet sheet = workbook.getSheetAt(getResources().getInteger(R.integer.achat_course));
 
-        
-
+        data=new ArrayList<>();
         int nbRow = ExcelTable.numberRow(sheet);
         for (int i = 2; i < nbRow + 1; i++) {
-            data.add(ExcelTable.getCellContent(sheet, i, 0) + " ~ " + ExcelTable.getCellContent(sheet, i, 1));
+            data.add(ExcelTable.getCellContent(sheet, i, 0)+"¤"+ExcelTable.getCellContent(sheet, i, 1)+
+                    "¤"+"Dette : "+ExcelTable.getCellContent(sheet, i, 2)+"¤"+ExcelTable.getCellContent(sheet, i, 4));
         }
-    }
-
-    private Spinner spinnerView() {
-        //create a list of items for the spinner.
-        ArrayList<String> items = new ArrayList<>();
-        items.add("Sélectionner une course");
-        Workbook workbook = ExcelTable.readFile(getContext());
-        Sheet sheet = workbook.getSheetAt(getResources().getInteger(R.integer.achat_course));
-
-        int nbRow = ExcelTable.numberRow(sheet);
-        for (int i = 2; i < nbRow + 1; i++) {
-            items.add(ExcelTable.getCellContent(sheet, i, 0) + " ~ " + ExcelTable.getCellContent(sheet, i, 1));
-        }
-
-        //get the spinner from the xml.
-        Spinner dropdown = v.findViewById(R.id.spinner);
-        //create an adapter to describe how the items are displayed, adapters are used in several places in android.
-        //There are multiple variations of this, but this is the basic variant.
-        ArrayAdapter<String> adapterAT = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, items);
-        // Specify the layout to use when the list of choices appears
-        adapterAT.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //set the spinners adapter to the previously created one.
-        dropdown.setAdapter(adapterAT);
-
-
-        return dropdown;
-    }
-
-
-    private ListView listViewShow(Context c,View v){
-
-        ArrayList<String> items = new ArrayList<>();
-
-        Workbook workbook = ExcelTable.readFile(getContext());
-        Sheet sheet = workbook.getSheetAt(getResources().getInteger(R.integer.achat_course));
-
-        int nbRow = ExcelTable.numberRow(sheet);
-        for (int i = 1; i < nbRow + 1; i++) {
-            items.add(ExcelTable.getCellContent(sheet, i, 0) + "  " + ExcelTable.getCellContent(sheet, i, 1));
-        }
-
-
-        //get the listview from the xml.
-        listViewCourse=v.findViewById(R.id.listViewCourse);
-        //create an adapter to describe how the items are displayed, adapters are used in several places in android.
-        //There are multiple variations of this, but this is the basic variant.
-        ArrayAdapter<String> adapterAT = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, items);
-        // Specify the layout to use when the list of choices appears
-        adapterAT.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //set the spinners adapter to the previously created one.
-        listViewCourse.setAdapter(adapterAT);
-
-        return listViewCourse;
     }
 
     private class MyListAdaper extends ArrayAdapter<String> {
@@ -198,6 +122,7 @@ public class ShopFragment extends Fragment {
             layout = resource;
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
             ViewHolder mainViewholder = null;
@@ -205,9 +130,11 @@ public class ShopFragment extends Fragment {
                 LayoutInflater inflater = LayoutInflater.from(getContext());
                 convertView = inflater.inflate(layout, parent, false);
                 ViewHolder viewHolder = new ViewHolder();
-                viewHolder.titresoirée = (TextView) convertView.findViewById(R.id.list_item_nomsoiree);
+                viewHolder.datesoirée = (TextView) convertView.findViewById(R.id.list_item_datesoiree);
+                viewHolder.nompersonne = (TextView) convertView.findViewById(R.id.list_item_nomsoiree);
                 viewHolder.dette = (TextView) convertView.findViewById(R.id.list_item_dette);
                 viewHolder.button = (Button) convertView.findViewById(R.id.list_item_btn);
+                viewHolder.list_item_layout = (LinearLayout) convertView.findViewById(R.id.list_item_layout);
                 convertView.setTag(viewHolder);
             }
             mainViewholder = (ViewHolder) convertView.getTag();
@@ -215,16 +142,34 @@ public class ShopFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Toast.makeText(getContext(), "Button was clicked for list item " + position, Toast.LENGTH_SHORT).show();
+                    ExcelTable.updateCourse(getContext(),mObjects.get(position).split("¤")[0],
+                            mObjects.get(position).split("¤")[1],
+                            Double.parseDouble(mObjects.get(position).split("¤")[2].split(" : ")[1]));
+                    generateListContent();
+                    lv.setAdapter(new MyListAdaper(getContext(), R.layout.list_item, data));
                 }
             });
-            mainViewholder.titresoirée.setText(mObjects.get(position));
+            mainViewholder.datesoirée.setText(mObjects.get(position).split("¤")[0].split("/")[0]+
+                    " "+mObjects.get(position).split("¤")[0].split("/")[1]+
+                    " "+mObjects.get(position).split("¤")[0].split("/")[2]);
 
+            mainViewholder.nompersonne.setText(mObjects.get(position).split("¤")[1]);
+            if(mObjects.get(position).split("¤")[3].equals("Non Remboursé")) {
+                mainViewholder.button.setVisibility(View.VISIBLE);
+                mainViewholder.dette.setText(mObjects.get(position).split("¤")[2]);
+                mainViewholder.list_item_layout.setBackgroundColor(Color.parseColor("#F14848"));
+            }else{
+                mainViewholder.dette.setText("Montant : "+mObjects.get(position).split("¤")[2].split(" : ")[1]);
+                mainViewholder.button.setVisibility(View.GONE);
+                mainViewholder.list_item_layout.setBackgroundColor(Color.parseColor("#9CD74E"));
+            }
             return convertView;
         }
     }
     public class ViewHolder {
-
-        TextView titresoirée;
+        LinearLayout list_item_layout;
+        TextView datesoirée;
+        TextView nompersonne;
         TextView dette;
         Button button;
     }
