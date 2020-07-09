@@ -12,27 +12,59 @@
         android:paddingHorizontal="15dp">
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="0.65"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/list_item2_nomsoiree"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Nom Soirée"
-                android:textSize="20sp" />
+                android:layout_weight="0.7"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/list_item2_dette"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/list_item2_nomsoiree"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nom Soirée"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/list_item2_dernierrepas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Repas : "
+                    android:textSize="20sp" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
-                android:text="Dette : " />
+                android:layout_weight="0.3"
+                android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/list_item2_nombreticket"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:text="Ticket : "
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/list_item2_dette"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dette : "
+                        android:textSize="20sp" />
+
+
+                </LinearLayout>
+            </LinearLayout>
+
+
         </LinearLayout>
-
-
     </LinearLayout>
-</LinearLayout>

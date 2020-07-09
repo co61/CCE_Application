@@ -147,7 +147,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="ic_reload" />
+                            <entry key="color" value="6e6e6e" />
+                            <entry key="outputName" value="ic_reload_grey" />
                             <entry key="sourceFile" value="C:\Users\Corentin Régné" />
                           </map>
                         </option>

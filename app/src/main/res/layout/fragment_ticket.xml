@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient"
+    android:background="@android:color/white"
     android:orientation="vertical"
     >
 
@@ -43,27 +43,76 @@
             android:orientation="vertical"
             android:visibility="visible"
             >
-
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="15sp"
-                android:text="Réservation repas"
-                android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:textSize="28sp"
-                android:background="#A859F4"/>
+                android:orientation="horizontal"
+                android:background="@drawable/bottom_border_grey"
+                >
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="0.6"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="15sp"
+                    android:text="Réservation repas"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/black"
+                    android:textSize="28sp"
+                    />
+
+                <Button
+                    android:id="@+id/newMemberButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:text="Nouveau membre" />
+
+                <Button
+                    android:id="@+id/createMemberButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:text="Créer membre"
+                    android:visibility="gone" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/newMember"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                android:background="@drawable/bottom_border_grey">
+
+                <EditText
+                    android:id="@+id/nomnewMember"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.45"
+                    android:hint="Nom" />
+
+                <EditText
+                    android:id="@+id/prenomnewMember"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.45"
+                    android:hint="Prénom" />
+
+            </LinearLayout>
+
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#9767FF">
+                android:background="@drawable/bottom_border_grey">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingTop="30dp"
+                    >
 
                     <TextView
                         android:layout_width="0dp"
@@ -73,44 +122,10 @@
                         android:textColor="@android:color/black"
                         android:textSize="24sp" />
 
-                    <Button
-                        android:id="@+id/newMemberButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.4"
-                        android:text="Nouveau membre" />
-
-                    <Button
-                        android:id="@+id/createMemberButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.4"
-                        android:text="Créer membre"
-                        android:visibility="gone" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/newMember"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <EditText
-                        android:id="@+id/nomnewMember"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.45"
-                        android:hint="Nom" />
-
-                    <EditText
-                        android:id="@+id/prenomnewMember"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.45"
-                        android:hint="Prénom" />
 
                 </LinearLayout>
+
+
 
                 <Spinner
                     android:id="@+id/spinnerAT"
@@ -323,7 +338,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingTop="30dp"
-                android:background="#5BA1F8">
+                android:background="@drawable/bottom_border_grey">
 
                 <TextView
                     android:layout_width="match_parent"
