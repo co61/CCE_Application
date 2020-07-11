@@ -80,6 +80,10 @@ public class ExcelTable {
         cell.setCellValue("Ticket prix");
         cell.setCellStyle(cellStyle);
 
+        cell = row.createCell(6);
+        cell.setCellValue("Date dernier repas");
+        cell.setCellStyle(cellStyle);
+
         //Table for evening account
         Sheet eveningAccountSheet;
         eveningAccountSheet = workbook.createSheet("Compte rendu des soirées");
@@ -312,6 +316,10 @@ public class ExcelTable {
         cell.setCellStyle(styleDouble);
         cell.setCellValue(3.0);
 
+        cell = row.createCell(6);
+        cell.setCellStyle(styleDouble);
+        cell.setCellValue(0);
+
         Sheet sheetTicket = workbook.getSheetAt(context.getResources().getInteger(R.integer.controle_achat_ticket));
 
         lastRow = sheetTicket.getLastRowNum() + 1;
@@ -342,7 +350,7 @@ public class ExcelTable {
     }
 
     @NotNull
-    public static Workbook updateMember(Context context, String nom, String prenom, int repasAT, int repasST, double montant, boolean dette) {
+    public static Workbook updateMember(Context context, String nom, String prenom, int repasAT, int repasST, double montant, boolean dette, String date) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_membre));
 
@@ -376,10 +384,17 @@ public class ExcelTable {
 
         }
         cell.setCellValue(val);
+
+        cell = row.getCell(6);
+        cell.setCellValue(date);
+
+
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
         return workbook;
 
     }
+
+
 
     /*public static void updateDues(Context context, double montant,String nom, String prenom) {
         Workbook workbook = readFile(context);

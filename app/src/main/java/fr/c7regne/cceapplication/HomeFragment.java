@@ -28,6 +28,11 @@ import java.util.Calendar;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
+    /**
+     * affichage des information de la soirée tel que les recettes sur un premier volet
+     * affichage d'un résumé rapide des membres sur un second volet
+     * utilisation d'un viw pager custom pour avoir plusieurs item et controler leur couleur ou forme
+     */
     private View v;
 
     private TextView dateEveningHome, nbpepoleEveningHome, nbticketEveningHome, nbsticketEveningHome, gainEveningHome;
@@ -131,9 +136,12 @@ public class HomeFragment extends Fragment {
 
         data = new ArrayList<>();
         int nbRow = ExcelTable.numberRow(sheet);
-        for (int i = 2; i < nbRow + 1; i++) {
-            data.add(ExcelTable.getCellContent(sheet, i, 0) + ExcelTable.getCellContent(sheet, i, 1) + "¤" + "Dette : " + ExcelTable.getCellContent(sheet, i, 4)
-            );//+ExcelTable.getCellContent(sheet, i, 6)
+        for (int i = 1; i < nbRow + 1; i++) {
+            data.add(ExcelTable.getCellContent(sheet, i, 0) +" "+ ExcelTable.getCellContent(sheet, i, 1) +
+                    "¤" + "Dette : " + ExcelTable.getCellContent(sheet, i, 4)+
+                    "¤" + "Ticket : " + ExcelTable.getCellContent(sheet, i, 2)+
+                    "¤" + "Repas : " + ExcelTable.getCellContent(sheet, i, 6)
+            );
         }
     }
 
@@ -158,6 +166,8 @@ public class HomeFragment extends Fragment {
 
                 viewHolder.nompersonnehome = (TextView) convertView.findViewById(R.id.list_item2_nomsoiree);
                 viewHolder.dettehome = (TextView) convertView.findViewById(R.id.list_item2_dette);
+                viewHolder.nombreticket= (TextView) convertView.findViewById(R.id.list_item2_nombreticket);
+                viewHolder.dernierrepas = (TextView) convertView.findViewById(R.id.list_item2_dernierrepas);
 
                 viewHolder.list_item_layouthome = (LinearLayout) convertView.findViewById(R.id.list_item2_layout);
                 convertView.setTag(viewHolder);
@@ -167,6 +177,8 @@ public class HomeFragment extends Fragment {
 
             mainViewholder.nompersonnehome.setText(mObjects.get(position).split("¤")[0]);
             mainViewholder.dettehome.setText(mObjects.get(position).split("¤")[1]);
+            mainViewholder.nombreticket.setText(mObjects.get(position).split("¤")[2]);
+            mainViewholder.dernierrepas.setText(mObjects.get(position).split("¤")[3]);
             if (Double.parseDouble(mObjects.get(position).split("¤")[1].split(" : ")[1])==0) {
                 mainViewholder.list_item_layouthome.setBackgroundColor(Color.parseColor("#9CD74E"));
             }else{
@@ -177,6 +189,8 @@ public class HomeFragment extends Fragment {
     }
 
     public class ViewHolder {
+        TextView nombreticket;
+        TextView dernierrepas;
         LinearLayout list_item_layouthome;
         TextView nompersonnehome;
         TextView dettehome;

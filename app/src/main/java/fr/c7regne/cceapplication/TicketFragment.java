@@ -3,7 +3,9 @@ package fr.c7regne.cceapplication;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +35,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class TicketFragment extends Fragment {
     /**
@@ -47,7 +50,7 @@ public class TicketFragment extends Fragment {
     private TextView dateTicket;
     private Button createEvening;
     private Calendar calendar;
-    private String fullDate;
+    private String fullDate, datechiffre;
 
     //acces to component on view to update excel file
     private Button newMemberButton, createMemberButton, buttonValidationAT, buttonValidationST, ajoutticket, buttonRembourserST, buttonRembourserAT;
@@ -72,7 +75,9 @@ public class TicketFragment extends Fragment {
         createEvening = v.findViewById(R.id.createEvening);
         calendar = Calendar.getInstance();
         fullDate = new SimpleDateFormat("dd/MMMM/yyyy").format(calendar.getTime());
-        dateTicket.setText(fullDate);
+        String date = new SimpleDateFormat("dd MMMM yyyy").format(calendar.getTime());
+        datechiffre = new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime());
+        dateTicket.setText(date);
         //check if evening create or not, set visible or not the tow layout
         if (ExcelTable.checkEvening(getContext(), fullDate)) {
             fillEveningLayout.setVisibility(View.GONE);
@@ -243,6 +248,7 @@ public class TicketFragment extends Fragment {
                             hideKeyboardFrom(getContext(), v);
                             //spinners = spinnerView();
                             Toast.makeText(getContext(), "Ticket ajouté", Toast.LENGTH_SHORT).show();
+                            ajoutticket.setClickable(false);
                         }
                     });
                     //ExcelTable.updateTicket();
@@ -299,7 +305,7 @@ public class TicketFragment extends Fragment {
                     if (!nbRepasAT.getText().toString().equals("0")) {
                         //update member sheet
                         ExcelTable.updateMember(getContext(), spinners[0].getSelectedItem().toString().split("-")[0], spinners[0].getSelectedItem().toString().split("-")[1],
-                                Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true);
+                                Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true, datechiffre);
                         //update evening sheet
                         ExcelTable.updateEvening(getContext(), fullDate,
                                 Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true, false);
@@ -310,6 +316,7 @@ public class TicketFragment extends Fragment {
                         hideKeyboardFrom(getContext(), v);
                         Toast.makeText(getContext(), "Repas enregistré", Toast.LENGTH_SHORT).show();
                         spinners = spinnerView();
+                        ajoutticket.setClickable(true);
                     } else {
                         Toast.makeText(getContext(), "La personne ne possède pas assez de ticket", Toast.LENGTH_SHORT).show();
                     }
@@ -378,7 +385,7 @@ public class TicketFragment extends Fragment {
                 } else {
                     //update member sheet
                     ExcelTable.updateMember(getContext(), spinners[1].getSelectedItem().toString().split("-")[0], spinners[1].getSelectedItem().toString().split("-")[1],
-                            0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked());
+                            0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked(), datechiffre);
                     //update evening sheet
                     ExcelTable.updateEvening(getContext(), fullDate,
                             0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked(), false);
@@ -441,7 +448,9 @@ public class TicketFragment extends Fragment {
     private Spinner[] spinnerView() {
         //create a list of items for the spinner.
         ArrayList<String> items = new ArrayList<>();
+        ArrayList<Boolean> presence = new ArrayList<>();
         items.add("Sélectionner une personne");
+        presence.add(false);
         Workbook workbook = ExcelTable.readFile(getContext());
         Sheet sheet = workbook.getSheetAt(getResources().getInteger(R.integer.compte_membre));
 
@@ -450,12 +459,37 @@ public class TicketFragment extends Fragment {
             items.add(ExcelTable.getCellContent(sheet, i, 0) + "-" + ExcelTable.getCellContent(sheet, i, 1));
         }
 
+        for (int i = 1; i < nbRow + 1; i++) {
+            if(ExcelTable.getCellContent(sheet, i, 6).equals(datechiffre)) {
+                presence.add(true);
+            }else{
+                presence.add(false);
+            }
+        }
 
+
+
+        Spinner dropdownAT = v.findViewById(R.id.spinnerAT);
+        CustomArrayAdapter<ArrayList<String>> customArrayAdapterAT = new CustomArrayAdapter<ArrayList<String>>(getContext(), items, presence);
+        // Specify the layout to use when the list of choices appears
+        customArrayAdapterAT.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        dropdownAT.setAdapter(customArrayAdapterAT);
+
+        Spinner dropdownST = v.findViewById(R.id.spinnerST);
+        CustomArrayAdapter<ArrayList<String>> customArrayAdapterST = new CustomArrayAdapter<ArrayList<String>>(getContext(), items, presence);
+        // Specify the layout to use when the list of choices appears
+        customArrayAdapterAT.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        dropdownST.setAdapter(customArrayAdapterAT);
+
+/*
         //get the spinner from the xml.
         Spinner dropdownAT = v.findViewById(R.id.spinnerAT);
         //create an adapter to describe how the items are displayed, adapters are used in several places in android.
         //There are multiple variations of this, but this is the basic variant.
         ArrayAdapter<String> adapterAT = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, items);
+
         // Specify the layout to use when the list of choices appears
         adapterAT.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //set the spinners adapter to the previously created one.
@@ -473,7 +507,7 @@ public class TicketFragment extends Fragment {
         // Specify the layout to use when the list of choices appears
         adapterST.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //set the spinners adapter to the previously created one.
-        dropdownST.setAdapter(adapterST);
+        dropdownST.setAdapter(adapterST);*/
 
         return new Spinner[]{dropdownAT, dropdownST};
     }
@@ -481,5 +515,26 @@ public class TicketFragment extends Fragment {
     private static void hideKeyboardFrom(@NotNull Context context, View view) {
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    static class CustomArrayAdapter<T> extends ArrayAdapter<T> {
+        ArrayList<Boolean> pres;
+        public CustomArrayAdapter(Context ctx, ArrayList<String> objects, ArrayList<Boolean> presence) {
+            super(ctx, android.R.layout.simple_spinner_dropdown_item, (List<T>) objects);
+            this.pres=presence;
+        }
+        @Override
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+            View view = super.getView(position, convertView, parent);
+            TextView text = (TextView) view.findViewById(android.R.id.text1);
+            //text.setPadding(10,10,10,10);
+            Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(pres));
+            if (pres.get(position)) {
+                text.setBackgroundColor(Color.GRAY);
+            }else {
+                text.setBackgroundColor(Color.WHITE);
+            }
+            return view;
+        }
     }
 }
