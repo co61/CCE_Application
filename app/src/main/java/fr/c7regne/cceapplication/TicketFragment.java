@@ -248,6 +248,7 @@ public class TicketFragment extends Fragment {
                             hideKeyboardFrom(getContext(), v);
                             //spinners = spinnerView();
                             Toast.makeText(getContext(), "Ticket ajouté", Toast.LENGTH_SHORT).show();
+                            ajoutticket.setClickable(false);
                         }
                     });
                     //ExcelTable.updateTicket();
@@ -315,6 +316,7 @@ public class TicketFragment extends Fragment {
                         hideKeyboardFrom(getContext(), v);
                         Toast.makeText(getContext(), "Repas enregistré", Toast.LENGTH_SHORT).show();
                         spinners = spinnerView();
+                        ajoutticket.setClickable(true);
                     } else {
                         Toast.makeText(getContext(), "La personne ne possède pas assez de ticket", Toast.LENGTH_SHORT).show();
                     }

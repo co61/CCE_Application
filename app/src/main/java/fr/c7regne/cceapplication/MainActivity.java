@@ -1,17 +1,23 @@
 package fr.c7regne.cceapplication;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -21,7 +27,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,10 +39,11 @@ public class MainActivity extends AppCompatActivity {
     private TicketFragment ticketFragment;
     private PaymentFragment paymentFragment;
     private ShopFragment shopFragment;
+    private Button btn_export;
 
 
     private BottomNavigationView bottomNavigationView;
-    ExcelTable excelTable;
+    private ExcelTable excelTable;
 
 
     @Override
@@ -55,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 excelTable = new ExcelTable();
                 Workbook wb = excelTable.getOriginal();
                 //save file
-                ExcelTable.createFile(this, wb,file);
+                ExcelTable.createFile(this, wb, file);
 
             } else { //if yes load the file
                 try {
@@ -83,7 +89,48 @@ public class MainActivity extends AppCompatActivity {
         //initialize the Top toolbar
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle("CCE Home");
+        //toolbar.setTitle("CCE Trésorerie");
+        /*
+        btn_export = findViewById(R.id.btn_export);
+        btn_export.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    //exporting
+                    Context context = getApplicationContext();
+                    File filelocation = new File(getFilesDir(), "CCETresorerieRepas.xls");
+                    Log.i("dddddddd", String.valueOf(filelocation));
+                    Uri path = FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID+".fileprovider", filelocation);
+                    Log.i("cccccccc", String.valueOf(path));
+                    Intent fileIntent = new Intent(Intent.ACTION_SEND);
+                    fileIntent.setType("application/vnd.ms-excel");
+                    fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+                    startActivity(Intent.createChooser(fileIntent, "Send mail"));
+                    /*
+                    Intent resultIntent = new Intent("fr.c7regne.cceapplication.ACTION_RETURN_FILE");
+                    if (path != null) {
+                        resultIntent.addFlags(
+                                Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        // Put the Uri and MIME type in the result Intent
+                        resultIntent.setDataAndType(
+                                path,
+                                getContentResolver().getType(path));
+                        // Set the result
+                        MainActivity.this.setResult(Activity.RESULT_OK,
+                                resultIntent);
+                    } else {
+                        resultIntent.setDataAndType(null, "");
+                        MainActivity.this.setResult(RESULT_CANCELED,
+                                resultIntent);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        });*/
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
