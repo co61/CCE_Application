@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="#ACF2FB"
     android:orientation="vertical">
 
     <LinearLayout
@@ -59,7 +59,8 @@
             android:layout_weight="0.5"
             android:text="Nombre de ticket"
             android:textColor="@android:color/black"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            />
 
         <TextView
             android:id="@+id/nbsticketEveningHome"
@@ -90,7 +91,13 @@
         android:textStyle="bold" />
 
     <ListView
-        android:id="@+id/listViewHome"
+        android:id="@+id/listViewHomePresent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="2dp"
+        android:background="@drawable/black_bar"/>
+    <ListView
+        android:id="@+id/listViewHomeOther"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

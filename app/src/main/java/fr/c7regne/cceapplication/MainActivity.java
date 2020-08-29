@@ -3,6 +3,7 @@ package fr.c7regne.cceapplication;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -14,8 +15,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.viewpager.widget.ViewPager;
@@ -37,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
 
     private HomeFragment homeFragment;
     private TicketFragment ticketFragment;
-    private PaymentFragment paymentFragment;
     private ShopFragment shopFragment;
     private Button btn_export;
 
@@ -45,13 +47,20 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private ExcelTable excelTable;
 
+    private int STORAGE_PERMISSION_CODE = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+        requestStoragePermission();
+
+
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             File file = new File(getExternalFilesDir(null), getResources().getString(R.string.file_name));
 
             Log.i("path", getResources().getString(R.string.file_name));
@@ -67,14 +76,14 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     Workbook workbook = WorkbookFactory.create(file);
                     excelTable = new ExcelTable(workbook);
-                    Toast.makeText(this, "XLS File load", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Ficher Excel Chargé", Toast.LENGTH_SHORT).show();
                 } catch (IOException | InvalidFormatException e) {
-                    Toast.makeText(this, "Failed to load XLS File", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Erreur pour charger le fichier Excel", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
             }
         } else {
-            Toast.makeText(this, "You must authorised storage access", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vous devez autoriser l'accés au stockage", Toast.LENGTH_SHORT).show();
         }
 
         //initialize the swipe
@@ -89,48 +98,7 @@ public class MainActivity extends AppCompatActivity {
         //initialize the Top toolbar
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //toolbar.setTitle("CCE Trésorerie");
-        /*
-        btn_export = findViewById(R.id.btn_export);
-        btn_export.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    //exporting
-                    Context context = getApplicationContext();
-                    File filelocation = new File(getFilesDir(), "CCETresorerieRepas.xls");
-                    Log.i("dddddddd", String.valueOf(filelocation));
-                    Uri path = FileProvider.getUriForFile(getApplicationContext(), BuildConfig.APPLICATION_ID+".fileprovider", filelocation);
-                    Log.i("cccccccc", String.valueOf(path));
-                    Intent fileIntent = new Intent(Intent.ACTION_SEND);
-                    fileIntent.setType("application/vnd.ms-excel");
-                    fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    fileIntent.putExtra(Intent.EXTRA_STREAM, path);
-                    startActivity(Intent.createChooser(fileIntent, "Send mail"));
-                    /*
-                    Intent resultIntent = new Intent("fr.c7regne.cceapplication.ACTION_RETURN_FILE");
-                    if (path != null) {
-                        resultIntent.addFlags(
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        // Put the Uri and MIME type in the result Intent
-                        resultIntent.setDataAndType(
-                                path,
-                                getContentResolver().getType(path));
-                        // Set the result
-                        MainActivity.this.setResult(Activity.RESULT_OK,
-                                resultIntent);
-                    } else {
-                        resultIntent.setDataAndType(null, "");
-                        MainActivity.this.setResult(RESULT_CANCELED,
-                                resultIntent);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
 
-            }
-
-        });*/
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -161,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         homeFragment = new HomeFragment();
         ticketFragment = new TicketFragment();
-        //paymentFragment = new PaymentFragment();
         shopFragment = new ShopFragment();
         adapter.addFragment(homeFragment);
         adapter.addFragment(ticketFragment);
@@ -204,6 +171,42 @@ public class MainActivity extends AppCompatActivity {
     public boolean checkPermission(String permission) {
         int check = ContextCompat.checkSelfPermission(this, permission);
         return (check == PackageManager.PERMISSION_GRANTED);
+    }
+
+
+    private void requestStoragePermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Permission nécessaire")
+                    .setMessage("Cette permission est nécessaire pour remplir le fichier Excel")
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+                        }
+                    })
+                    .setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create().show();
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == STORAGE_PERMISSION_CODE)  {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            } else {
+                Toast.makeText(this, "Permission Refusée", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 }

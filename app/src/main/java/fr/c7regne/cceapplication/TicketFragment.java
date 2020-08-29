@@ -54,7 +54,7 @@ public class TicketFragment extends Fragment {
 
     //acces to component on view to update excel file
     private Button newMemberButton, createMemberButton, buttonValidationAT, buttonValidationST, ajoutticket, buttonRembourserST, buttonRembourserAT;
-    private EditText nomnewMember, prenomnewMember, montantST, montantDetteRemboursementST, montantDetteRemboursementAT, reducctionTicket;
+    private EditText prenomnewMember, montantST, montantDetteRemboursementST, montantDetteRemboursementAT, reducctionTicket;
     private TextView nbRepasAT, nbRepasST, montantAT, nbticketinfo, detteinfoAT, detteinfoST, nbTicketAchat;
     private CheckBox checkBoxST, checkboxAT;
     private ImageView minusAT, minusST, plusAT, plusST, minusAchaTicket, plusAchaTicket;
@@ -75,7 +75,7 @@ public class TicketFragment extends Fragment {
         createEvening = v.findViewById(R.id.createEvening);
         calendar = Calendar.getInstance();
         fullDate = new SimpleDateFormat("dd/MMMM/yyyy").format(calendar.getTime());
-        String date = new SimpleDateFormat("dd MMMM yyyy").format(calendar.getTime());
+        final String date = new SimpleDateFormat("dd MMMM yyyy").format(calendar.getTime());
         datechiffre = new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime());
         dateTicket.setText(date);
         //check if evening create or not, set visible or not the tow layout
@@ -103,7 +103,6 @@ public class TicketFragment extends Fragment {
         final LinearLayout ldetteSt = v.findViewById(R.id.ldetteSt);
         final LinearLayout lnewMember = v.findViewById(R.id.newMember);
 
-        nomnewMember = v.findViewById(R.id.nomnewMember);
         prenomnewMember = v.findViewById(R.id.prenomnewMember);
         newMemberButton = v.findViewById(R.id.newMemberButton);
         createMemberButton = v.findViewById(R.id.createMemberButton);
@@ -116,26 +115,40 @@ public class TicketFragment extends Fragment {
                 createMemberButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (!(nomnewMember.getText().toString().equals("") || prenomnewMember.getText().toString().equals(""))) {
-                            if (ExcelTable.checkNotMember(getContext(), nomnewMember.getText().toString(), prenomnewMember.getText().toString())) {
-                                //create member in member sheet
-                                ExcelTable.createNewMember(getContext(), nomnewMember.getText().toString(), prenomnewMember.getText().toString(),
-                                        0, 0, 0, true);
+                        if (!prenomnewMember.getText().toString().equals("")) {
+                                if (ExcelTable.checkNotMember(getContext(), prenomnewMember.getText().toString())) {
+                                    //create member in member sheet
+                                    ExcelTable.createNewMember(getContext(), prenomnewMember.getText().toString(), datechiffre);
 
-                                //reset value and hide keyboard
-                                nomnewMember.setText(null);
-                                prenomnewMember.setText(null);
-                                spinners = spinnerView();
-                                hideKeyboardFrom(getContext(), v);
-                                Toast.makeText(getContext(), "Membre crée", Toast.LENGTH_SHORT).show();
-                                lnewMember.setVisibility(View.GONE);
-                                newMemberButton.setVisibility(View.VISIBLE);
-                                createMemberButton.setVisibility(View.GONE);
+                                    //reset value and hide keyboard
+                                    prenomnewMember.setText(null);
+                                    spinners = spinnerView();
+                                    hideKeyboardFrom(getContext(), v);
+                                    Toast.makeText(getContext(), "Membre crée", Toast.LENGTH_SHORT).show();
+                                    lnewMember.setVisibility(View.GONE);
+                                    newMemberButton.setVisibility(View.VISIBLE);
+                                    createMemberButton.setVisibility(View.GONE);
                             } else {
-                                Toast.makeText(getContext(), "Ce membre éxiste déjà", Toast.LENGTH_SHORT).show();
+                                if (ExcelTable.checkNotMember(getContext(),  prenomnewMember.getText().toString())) {
+                                    //create member in member sheet
+                                    ExcelTable.createNewMember(getContext(),  prenomnewMember.getText().toString(), datechiffre);
+
+                                    //reset value and hide keyboard
+                                    prenomnewMember.setText(null);
+                                    spinners = spinnerView();
+                                    hideKeyboardFrom(getContext(), v);
+                                    Toast.makeText(getContext(), "Membre crée", Toast.LENGTH_SHORT).show();
+                                    lnewMember.setVisibility(View.GONE);
+                                    newMemberButton.setVisibility(View.VISIBLE);
+                                    createMemberButton.setVisibility(View.GONE);
+                                } else {
+                                    Toast.makeText(getContext(), "Ce membre existe déjà", Toast.LENGTH_SHORT).show();
+                                }
                             }
+
+
                         } else {
-                            Toast.makeText(getContext(), "Entrez un nom et un prénom avant de valider", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Entrez un prénom avant de valider", Toast.LENGTH_SHORT).show();
                         }
 
                     }
@@ -184,7 +197,7 @@ public class TicketFragment extends Fragment {
                     lmemberinfo.setVisibility(View.VISIBLE);
                     final Workbook workbook = ExcelTable.readFile(getContext());
                     Sheet s = workbook.getSheetAt(getResources().getInteger(R.integer.compte_membre));
-                    final Row r = ExcelTable.findMember(s, item.split("-")[0], item.split("-")[1]);
+                    final Row r = ExcelTable.findMember(s, item);
                     prixRepasTicket = r.getCell(5).getNumericCellValue();
                     limitTicket = r.getCell(2).getNumericCellValue();
                     if (limitTicket == 0) {
@@ -226,7 +239,7 @@ public class TicketFragment extends Fragment {
                                             / (r.getCell(2).getNumericCellValue() + Integer.parseInt(nbTicketAchat.getText().toString()));
                             Cell cell = r.getCell(5);
                             cell.setCellValue(moyennePrixTicket);
-
+                            prixRepasTicket=moyennePrixTicket;
                             //get ticcket to the member
                             cell = r.getCell(2);
                             cell.setCellValue(cell.getNumericCellValue() + Integer.parseInt(nbTicketAchat.getText().toString()));
@@ -241,13 +254,13 @@ public class TicketFragment extends Fragment {
                                 checkboxAT.setChecked(true);
                             }
                             ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
-                            ExcelTable.updateTicket(getContext(), item.split("-")[0], item.split("-")[1], fullDate,
+                            ExcelTable.updateTicket(getContext(), item, fullDate,
                                     Integer.parseInt(nbTicketAchat.getText().toString()), Double.parseDouble(reducctionTicket.getText().toString()), checkboxAT.isChecked());
                             nbTicketAchat.setText("7");
                             reducctionTicket.setText("21");
                             hideKeyboardFrom(getContext(), v);
                             //spinners = spinnerView();
-                            Toast.makeText(getContext(), "Ticket ajouté", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Tickets ajoutés", Toast.LENGTH_SHORT).show();
                             ajoutticket.setClickable(false);
                         }
                     });
@@ -304,7 +317,7 @@ public class TicketFragment extends Fragment {
 
                     if (!nbRepasAT.getText().toString().equals("0")) {
                         //update member sheet
-                        ExcelTable.updateMember(getContext(), spinners[0].getSelectedItem().toString().split("-")[0], spinners[0].getSelectedItem().toString().split("-")[1],
+                        ExcelTable.updateMember(getContext(), spinners[0].getSelectedItem().toString(),
                                 Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true, datechiffre);
                         //update evening sheet
                         ExcelTable.updateEvening(getContext(), fullDate,
@@ -338,7 +351,7 @@ public class TicketFragment extends Fragment {
                     ldetteSt.setVisibility(View.VISIBLE);
                     final Workbook workbook = ExcelTable.readFile(getContext());
                     Sheet s = workbook.getSheetAt(getResources().getInteger(R.integer.compte_membre));
-                    final Row r = ExcelTable.findMember(s, item.split("-")[0], item.split("-")[1]);
+                    final Row r = ExcelTable.findMember(s, item);
 
                     detteinfoST.setText("Dette : " + r.getCell(4).getNumericCellValue());
                     if (r.getCell(4).getNumericCellValue() == 0) {
@@ -384,7 +397,7 @@ public class TicketFragment extends Fragment {
                     Toast.makeText(getContext(), "Veuillez sélectionner une personne éxistante ou Nouvô pour créer un nouveau compte", Toast.LENGTH_SHORT).show();
                 } else {
                     //update member sheet
-                    ExcelTable.updateMember(getContext(), spinners[1].getSelectedItem().toString().split("-")[0], spinners[1].getSelectedItem().toString().split("-")[1],
+                    ExcelTable.updateMember(getContext(), spinners[1].getSelectedItem().toString(),
                             0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked(), datechiffre);
                     //update evening sheet
                     ExcelTable.updateEvening(getContext(), fullDate,
@@ -393,6 +406,7 @@ public class TicketFragment extends Fragment {
                     montantST.setText(getResources().getString(R.string.prix_repas));
                     checkBoxST.setChecked(true);
                     hideKeyboardFrom(getContext(), v);
+                    Toast.makeText(getContext(), "Repas enregistré", Toast.LENGTH_SHORT).show();
                     spinners = spinnerView();
                 }
 
@@ -456,17 +470,16 @@ public class TicketFragment extends Fragment {
 
         int nbRow = ExcelTable.numberRow(sheet);
         for (int i = 1; i < nbRow + 1; i++) {
-            items.add(ExcelTable.getCellContent(sheet, i, 0) + "-" + ExcelTable.getCellContent(sheet, i, 1));
+            items.add(ExcelTable.getCellContent(sheet, i, 1));
         }
 
         for (int i = 1; i < nbRow + 1; i++) {
-            if(ExcelTable.getCellContent(sheet, i, 6).equals(datechiffre)) {
+            if (ExcelTable.getCellContent(sheet, i, 6).equals(datechiffre)) {
                 presence.add(true);
-            }else{
+            } else {
                 presence.add(false);
             }
         }
-
 
 
         Spinner dropdownAT = v.findViewById(R.id.spinnerAT);
@@ -519,22 +532,26 @@ public class TicketFragment extends Fragment {
 
     static class CustomArrayAdapter<T> extends ArrayAdapter<T> {
         ArrayList<Boolean> pres;
+
         public CustomArrayAdapter(Context ctx, ArrayList<String> objects, ArrayList<Boolean> presence) {
             super(ctx, android.R.layout.simple_spinner_dropdown_item, (List<T>) objects);
-            this.pres=presence;
+            this.pres = presence;
         }
+
         @Override
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
             View view = super.getView(position, convertView, parent);
             TextView text = (TextView) view.findViewById(android.R.id.text1);
             //text.setPadding(10,10,10,10);
-            Log.i("eeeeeeeeeeeeeeeeee",String.valueOf(pres));
+            Log.i("eeeeeeeeeeeeeeeeee", String.valueOf(pres));
             if (pres.get(position)) {
                 text.setBackgroundColor(Color.GRAY);
-            }else {
+            } else {
                 text.setBackgroundColor(Color.WHITE);
             }
             return view;
         }
     }
+
+
 }

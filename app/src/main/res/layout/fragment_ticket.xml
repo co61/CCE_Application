@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="#ACF2FB"
     android:orientation="vertical"
     >
 
@@ -47,7 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:background="@drawable/bottom_border_grey"
+                android:background="#D268FF"
                 >
 
                 <TextView
@@ -82,21 +82,17 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:visibility="gone"
-                android:background="@drawable/bottom_border_grey">
-
-                <EditText
-                    android:id="@+id/nomnewMember"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.45"
-                    android:hint="Nom" />
+                android:background="#D268FF">
 
                 <EditText
                     android:id="@+id/prenomnewMember"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.45"
+
                     android:hint="Prénom" />
+
+
+
 
             </LinearLayout>
 
@@ -105,7 +101,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/bottom_border_grey">
+                android:background="#A6CEFF">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -198,6 +194,7 @@
                             android:layout_gravity="center"
                             android:layout_weight="0.2"
                             android:text="21"
+                            android:inputType="numberDecimal"
                             android:textAlignment="center"
                             android:textColor="@android:color/black"
                             android:textSize="20sp" />
@@ -338,7 +335,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:paddingTop="30dp"
-                android:background="@drawable/bottom_border_grey">
+                android:background="#ACF2FB">
 
                 <TextView
                     android:layout_width="match_parent"
