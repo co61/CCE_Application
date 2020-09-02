@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +46,6 @@ public class HomeFragment extends Fragment {
 
 
     private ArrayList<String> data = new ArrayList<>();
-    private ArrayList<String> dataP = new ArrayList<>();
 
     @SuppressLint("SetTextI18n")
     @Nullable
@@ -107,7 +105,7 @@ public class HomeFragment extends Fragment {
                             Integer.parseInt(ExcelTable.getCellContent(sheet, row.getRowNum(), 2))));
                     nbticketEveningHome.setText("Avec ticket : " + ExcelTable.getCellContent(sheet, row.getRowNum(), 1));
                     nbsticketEveningHome.setText("Sans ticket : " + ExcelTable.getCellContent(sheet, row.getRowNum(), 2));
-                    gainEveningHome.setText("Gain réel de la soirée : " + row.getCell(6).getNumericCellValue());
+                    gainEveningHome.setText("Recette de la soirée : " + row.getCell(6).getNumericCellValue());
                 } else {
                     dateEveningHome.setText("Pas de soirée enregistrée pour aujourd'hui");
                     nbpepoleEveningHome.setVisibility(View.GONE);
@@ -119,7 +117,6 @@ public class HomeFragment extends Fragment {
                 generateListContent();
 
                 lvho.setAdapter(new HomeListAdapter(getContext(), R.layout.list_item2, data));
-                lvhp.setAdapter(new HomeListAdapter(getContext(), R.layout.list_item2, dataP));
 
             }
         });
@@ -127,11 +124,17 @@ public class HomeFragment extends Fragment {
         generateListContent();
 
         lvho.setAdapter(new HomeListAdapter(getContext(), R.layout.list_item2, data));
-        lvhp.setAdapter(new HomeListAdapter(getContext(), R.layout.list_item2, dataP));
+
 
 
         return v;
 
+
+    }
+
+    public void updateEditText(CharSequence d_ddmmyy,CharSequence date,CharSequence d_dMy) {
+        fullDate=(String)d_ddmmyy;
+        dateChiffre=(String)d_dMy;
 
     }
 
@@ -140,17 +143,19 @@ public class HomeFragment extends Fragment {
         Sheet sheet = workbook.getSheetAt(getResources().getInteger(R.integer.compte_membre));
 
         data = new ArrayList<>();
-        dataP = new ArrayList<>();
+        data.add("Personnes présentes :");
+
         int nbRow = ExcelTable.numberRow(sheet);
         for (int i = 1; i < nbRow + 1; i++) {
             if (ExcelTable.getCellContent(sheet, i, 6).equals(dateChiffre)) {
-                dataP.add(ExcelTable.getCellContent(sheet, i, 1) +
+
+                data.add(ExcelTable.getCellContent(sheet, i, 1) +
                         "¤" + "Dette : " + ExcelTable.getCellContent(sheet, i, 4) +
                         "¤" + "Ticket : " + ExcelTable.getCellContent(sheet, i, 2) +
                         "¤" + "Repas le : " + ExcelTable.getCellContent(sheet, i, 6)
                 );
             } else {
-                data.add(ExcelTable.getCellContent(sheet, i, 0) + " " + ExcelTable.getCellContent(sheet, i, 1) +
+                data.add(0,ExcelTable.getCellContent(sheet, i, 0) + " " + ExcelTable.getCellContent(sheet, i, 1) +
                         "¤" + "Dette : " + ExcelTable.getCellContent(sheet, i, 4) +
                         "¤" + "Ticket : " + ExcelTable.getCellContent(sheet, i, 2) +
                         "¤" + "Repas le : " + ExcelTable.getCellContent(sheet, i, 6)
@@ -188,15 +193,22 @@ public class HomeFragment extends Fragment {
             }
             mainViewholder = (HomeFragment.ViewHolder) convertView.getTag();
 
-
-            mainViewholder.nompersonnehome.setText(mObjects.get(position).split("¤")[0]);
-            mainViewholder.dettehome.setText(mObjects.get(position).split("¤")[1]);
-            mainViewholder.nombreticket.setText(mObjects.get(position).split("¤")[2]);
-            mainViewholder.dernierrepas.setText(mObjects.get(position).split("¤")[3]);
-            if (Double.parseDouble(mObjects.get(position).split("¤")[1].split(" : ")[1]) == 0) {
-                mainViewholder.list_item_layouthome.setBackgroundColor(Color.parseColor("#9CD74E"));
-            } else {
-                mainViewholder.list_item_layouthome.setBackgroundColor(Color.parseColor("#F14848"));
+            if(mObjects.get(position).equals("Personnes présentes :")){
+                mainViewholder.nompersonnehome.setText("Personnes présentes :");
+                mainViewholder.dettehome.setText("");
+                mainViewholder.nombreticket.setVisibility(View.GONE);
+                mainViewholder.dernierrepas.setVisibility(View.GONE);
+                mainViewholder.list_item_layouthome.setBackgroundColor(Color.parseColor("#ACF2FB"));
+            }else {
+                mainViewholder.nompersonnehome.setText(mObjects.get(position).split("¤")[0]);
+                mainViewholder.dettehome.setText(mObjects.get(position).split("¤")[1]);
+                mainViewholder.nombreticket.setText(mObjects.get(position).split("¤")[2]);
+                mainViewholder.dernierrepas.setText(mObjects.get(position).split("¤")[3]);
+                if (Double.parseDouble(mObjects.get(position).split("¤")[1].split(" : ")[1]) == 0) {
+                    mainViewholder.list_item_layouthome.setBackgroundColor(Color.parseColor("#9CD74E"));
+                } else {
+                    mainViewholder.list_item_layouthome.setBackgroundColor(Color.parseColor("#F14848"));
+                }
             }
             return convertView;
         }

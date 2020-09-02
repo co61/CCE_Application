@@ -2,10 +2,12 @@ package fr.c7regne.cceapplication;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.icu.text.DecimalFormat;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -23,6 +26,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -37,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class TicketFragment extends Fragment {
+public class TicketFragment extends Fragment implements DatePickerDialog.OnDateSetListener {
     /**
      * Ce fragment gère les réservations des membres et des nouveaux membres pour chaque soirée
      * que ce soit achat de ticket, remboursement de dette ou prise d'un repas pour la soirée (ou plusieurs)
@@ -50,7 +55,7 @@ public class TicketFragment extends Fragment {
     private TextView dateTicket;
     private Button createEvening;
     private Calendar calendar;
-    private String fullDate, datechiffre;
+    private String date_ddMMMMyyyy, dateChiffre, date;
 
     //acces to component on view to update excel file
     private Button newMemberButton, createMemberButton, buttonValidationAT, buttonValidationST, ajoutticket, buttonRembourserST, buttonRembourserAT;
@@ -60,6 +65,12 @@ public class TicketFragment extends Fragment {
     private ImageView minusAT, minusST, plusAT, plusST, minusAchaTicket, plusAchaTicket;
 
     private double prixRepasTicket, limitTicket;
+
+    private TicketFragmentListener listener;
+
+    public interface TicketFragmentListener {
+        void onInputSent(CharSequence date_ddMMMMyyyy,CharSequence date,CharSequence dateChiffre);
+    }
 
     //firstly, we create the view
     @Nullable
@@ -74,12 +85,25 @@ public class TicketFragment extends Fragment {
         dateTicket = v.findViewById(R.id.dateTicket);
         createEvening = v.findViewById(R.id.createEvening);
         calendar = Calendar.getInstance();
-        fullDate = new SimpleDateFormat("dd/MMMM/yyyy").format(calendar.getTime());
-        final String date = new SimpleDateFormat("dd MMMM yyyy").format(calendar.getTime());
-        datechiffre = new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime());
+        date_ddMMMMyyyy = new SimpleDateFormat("dd/MMMM/yyyy").format(calendar.getTime());
+        date = new SimpleDateFormat("dd MMMM yyyy").format(calendar.getTime());
+        dateChiffre = new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime());
         dateTicket.setText(date);
+
+        Button button = (Button) v.findViewById(R.id.pickDateButton);
+        button.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                DialogFragment newFragment = new DatePickerFragment(); // creating DialogFragment which creates DatePickerDialog
+                newFragment.setTargetFragment(TicketFragment.this, 0);  // Passing this fragment DatePickerFragment.
+                // As i figured out this is the best way to keep the reference to calling activity when using FRAGMENT.
+                newFragment.show(getFragmentManager(), "datePicker");
+            }
+        });
+
         //check if evening create or not, set visible or not the tow layout
-        if (ExcelTable.checkEvening(getContext(), fullDate)) {
+        if (ExcelTable.checkEvening(getContext(), date_ddMMMMyyyy)) {
             fillEveningLayout.setVisibility(View.GONE);
             createEveningLayout.setVisibility(View.VISIBLE);
             createEvening.setOnClickListener(new View.OnClickListener() {
@@ -87,7 +111,7 @@ public class TicketFragment extends Fragment {
                 public void onClick(View v) {
                     fillEveningLayout.setVisibility(View.VISIBLE);
                     createEveningLayout.setVisibility(View.GONE);
-                    ExcelTable.createNewEvening(getContext(), fullDate);
+                    ExcelTable.createNewEvening(getContext(), date_ddMMMMyyyy);
                     Toast.makeText(getContext(), "Soirée créee", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -116,22 +140,22 @@ public class TicketFragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         if (!prenomnewMember.getText().toString().equals("")) {
+                            if (ExcelTable.checkNotMember(getContext(), prenomnewMember.getText().toString())) {
+                                //create member in member sheet
+                                ExcelTable.createNewMember(getContext(), prenomnewMember.getText().toString(), dateChiffre);
+
+                                //reset value and hide keyboard
+                                prenomnewMember.setText(null);
+                                spinners = spinnerView();
+                                hideKeyboardFrom(getContext(), v);
+                                Toast.makeText(getContext(), "Membre crée", Toast.LENGTH_SHORT).show();
+                                lnewMember.setVisibility(View.GONE);
+                                newMemberButton.setVisibility(View.VISIBLE);
+                                createMemberButton.setVisibility(View.GONE);
+                            } else {
                                 if (ExcelTable.checkNotMember(getContext(), prenomnewMember.getText().toString())) {
                                     //create member in member sheet
-                                    ExcelTable.createNewMember(getContext(), prenomnewMember.getText().toString(), datechiffre);
-
-                                    //reset value and hide keyboard
-                                    prenomnewMember.setText(null);
-                                    spinners = spinnerView();
-                                    hideKeyboardFrom(getContext(), v);
-                                    Toast.makeText(getContext(), "Membre crée", Toast.LENGTH_SHORT).show();
-                                    lnewMember.setVisibility(View.GONE);
-                                    newMemberButton.setVisibility(View.VISIBLE);
-                                    createMemberButton.setVisibility(View.GONE);
-                            } else {
-                                if (ExcelTable.checkNotMember(getContext(),  prenomnewMember.getText().toString())) {
-                                    //create member in member sheet
-                                    ExcelTable.createNewMember(getContext(),  prenomnewMember.getText().toString(), datechiffre);
+                                    ExcelTable.createNewMember(getContext(), prenomnewMember.getText().toString(), dateChiffre);
 
                                     //reset value and hide keyboard
                                     prenomnewMember.setText(null);
@@ -225,6 +249,7 @@ public class TicketFragment extends Fragment {
                         }
                     });
                     ajoutticket.setOnClickListener(new View.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.N)
                         @Override
                         public void onClick(View v) {
                             //set a new ticket price with ancient and new
@@ -237,9 +262,13 @@ public class TicketFragment extends Fragment {
                                             (Double.parseDouble(reducctionTicket.getText().toString())
                                                     / Integer.parseInt(nbTicketAchat.getText().toString()))))
                                             / (r.getCell(2).getNumericCellValue() + Integer.parseInt(nbTicketAchat.getText().toString()));
+                            DecimalFormat f = new DecimalFormat();
+                            f.setMaximumFractionDigits(2);
+                            moyennePrixTicket = Double.parseDouble(f.format(moyennePrixTicket).replace(',', '.'));
+
                             Cell cell = r.getCell(5);
                             cell.setCellValue(moyennePrixTicket);
-                            prixRepasTicket=moyennePrixTicket;
+                            prixRepasTicket = moyennePrixTicket;
                             //get ticcket to the member
                             cell = r.getCell(2);
                             cell.setCellValue(cell.getNumericCellValue() + Integer.parseInt(nbTicketAchat.getText().toString()));
@@ -254,8 +283,12 @@ public class TicketFragment extends Fragment {
                                 checkboxAT.setChecked(true);
                             }
                             ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
-                            ExcelTable.updateTicket(getContext(), item, fullDate,
-                                    Integer.parseInt(nbTicketAchat.getText().toString()), Double.parseDouble(reducctionTicket.getText().toString()), checkboxAT.isChecked());
+                            ExcelTable.updateTicket(getContext(), item, date_ddMMMMyyyy,
+                                    Integer.parseInt(nbTicketAchat.getText().toString()),
+                                    Double.parseDouble(reducctionTicket.getText().toString()),
+                                    checkboxAT.isChecked());
+                            ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 0, 0,
+                                    Double.parseDouble(reducctionTicket.getText().toString()), checkboxAT.isChecked(), false);
                             nbTicketAchat.setText("7");
                             reducctionTicket.setText("21");
                             hideKeyboardFrom(getContext(), v);
@@ -280,7 +313,7 @@ public class TicketFragment extends Fragment {
                                 if (montant != 0) {
                                     r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
                                     ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
-                                    ExcelTable.updateEvening(getContext(), fullDate, 0, 0, montant, true, true);
+                                    ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 0, 0, montant, true, true);
                                     detteinfoAT.setText("Dette : " + r.getCell(4).getNumericCellValue());
                                     montantDetteRemboursementAT.setText("0.0");
                                     //spinners = spinnerView();
@@ -318,10 +351,11 @@ public class TicketFragment extends Fragment {
                     if (!nbRepasAT.getText().toString().equals("0")) {
                         //update member sheet
                         ExcelTable.updateMember(getContext(), spinners[0].getSelectedItem().toString(),
-                                Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true, datechiffre);
+                                Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true, dateChiffre);
                         //update evening sheet
-                        ExcelTable.updateEvening(getContext(), fullDate,
-                                Integer.parseInt(nbRepasAT.getText().toString()), 0, Double.parseDouble(montantAT.getText().toString()), true, false);
+                        ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy,
+                                Integer.parseInt(nbRepasAT.getText().toString()), 0,
+                                Double.parseDouble(montantAT.getText().toString()), true, false);
                         nbRepasAT.setText("1");
                         montantAT.setText(getResources().getString(R.string
 
@@ -367,7 +401,7 @@ public class TicketFragment extends Fragment {
                                 if (montant != 0) {
                                     r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
                                     ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
-                                    ExcelTable.updateEvening(getContext(), fullDate, 0, 0, montant, true, true);
+                                    ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 0, 0, montant, true, true);
                                     detteinfoST.setText("Dette : " + r.getCell(4).getNumericCellValue());
                                     montantDetteRemboursementST.setText("0.0");
                                     hideKeyboardFrom(getContext(), v);
@@ -398,10 +432,12 @@ public class TicketFragment extends Fragment {
                 } else {
                     //update member sheet
                     ExcelTable.updateMember(getContext(), spinners[1].getSelectedItem().toString(),
-                            0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked(), datechiffre);
+                            0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()),
+                            checkBoxST.isChecked(), dateChiffre);
                     //update evening sheet
-                    ExcelTable.updateEvening(getContext(), fullDate,
-                            0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()), checkBoxST.isChecked(), false);
+                    ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy,
+                            0, Integer.parseInt(nbRepasST.getText().toString()), Double.parseDouble(montantST.getText().toString()),
+                            checkBoxST.isChecked(), false);
                     nbRepasST.setText("1");
                     montantST.setText(getResources().getString(R.string.prix_repas));
                     checkBoxST.setChecked(true);
@@ -474,7 +510,7 @@ public class TicketFragment extends Fragment {
         }
 
         for (int i = 1; i < nbRow + 1; i++) {
-            if (ExcelTable.getCellContent(sheet, i, 6).equals(datechiffre)) {
+            if (ExcelTable.getCellContent(sheet, i, 6).equals(dateChiffre)) {
                 presence.add(true);
             } else {
                 presence.add(false);
@@ -495,32 +531,6 @@ public class TicketFragment extends Fragment {
         customArrayAdapterAT.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         dropdownST.setAdapter(customArrayAdapterAT);
-
-/*
-        //get the spinner from the xml.
-        Spinner dropdownAT = v.findViewById(R.id.spinnerAT);
-        //create an adapter to describe how the items are displayed, adapters are used in several places in android.
-        //There are multiple variations of this, but this is the basic variant.
-        ArrayAdapter<String> adapterAT = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, items);
-
-        // Specify the layout to use when the list of choices appears
-        adapterAT.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //set the spinners adapter to the previously created one.
-        dropdownAT.setAdapter(adapterAT);
-
-
-        //get the spinner from the xml.
-        Spinner dropdownST = v.findViewById(R.id.spinnerST);
-        //Same items than the other spinner
-
-        //create an adapter to describe how the items are displayed, adapters are used in several places in android.
-        //There are multiple variations of this, but this is the basic variant.
-
-        ArrayAdapter<String> adapterST = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, items);
-        // Specify the layout to use when the list of choices appears
-        adapterST.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //set the spinners adapter to the previously created one.
-        dropdownST.setAdapter(adapterST);*/
 
         return new Spinner[]{dropdownAT, dropdownST};
     }
@@ -543,7 +553,6 @@ public class TicketFragment extends Fragment {
             View view = super.getView(position, convertView, parent);
             TextView text = (TextView) view.findViewById(android.R.id.text1);
             //text.setPadding(10,10,10,10);
-            Log.i("eeeeeeeeeeeeeeeeee", String.valueOf(pres));
             if (pres.get(position)) {
                 text.setBackgroundColor(Color.GRAY);
             } else {
@@ -551,6 +560,58 @@ public class TicketFragment extends Fragment {
             }
             return view;
         }
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.YEAR, year);
+        c.set(Calendar.MONTH, month);
+        c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        date_ddMMMMyyyy = new SimpleDateFormat("dd/MMMM/yyyy").format(c.getTime());
+        date = new SimpleDateFormat("dd MMMM yyyy").format(c.getTime());
+        dateChiffre = new SimpleDateFormat("dd/MM/yyyy").format(c.getTime());
+        dateTicket.setText(date);
+
+
+        createEvening.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ExcelTable.checkEvening(getContext(), date_ddMMMMyyyy)) {
+                    fillEveningLayout.setVisibility(View.VISIBLE);
+                    createEveningLayout.setVisibility(View.GONE);
+                    ExcelTable.createNewEvening(getContext(), date_ddMMMMyyyy);
+                    Toast.makeText(getContext(), "Soirée créee", Toast.LENGTH_SHORT).show();
+                    listener.onInputSent(date_ddMMMMyyyy,date,dateChiffre);
+
+                } else {
+                    fillEveningLayout.setVisibility(View.VISIBLE);
+                    createEveningLayout.setVisibility(View.GONE);
+                    Toast.makeText(getContext(), "Soirée chargée", Toast.LENGTH_SHORT).show();
+                    listener.onInputSent(date_ddMMMMyyyy,date,dateChiffre);
+
+                }
+
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof TicketFragmentListener) {
+            listener = (TicketFragmentListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement TicketFragmentListener");
+        }
+    }
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 
 

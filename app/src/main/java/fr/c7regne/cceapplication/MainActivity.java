@@ -1,17 +1,10 @@
 package fr.c7regne.cceapplication;
 
 import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -32,8 +24,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import java.io.File;
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
-    private Intent launchIntent;
+public class MainActivity extends AppCompatActivity implements TicketFragment.TicketFragmentListener {
     Toolbar toolbar;
     private ViewPager viewPager; //ViewPager is a pattern used to swipe horizontally between fragments
     private MenuItem previousSelectedItemId;
@@ -41,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
     private HomeFragment homeFragment;
     private TicketFragment ticketFragment;
     private ShopFragment shopFragment;
-    private Button btn_export;
 
 
     private BottomNavigationView bottomNavigationView;
@@ -63,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             File file = new File(getExternalFilesDir(null), getResources().getString(R.string.file_name));
 
-            Log.i("path", getResources().getString(R.string.file_name));
             //check if the file exist
             if (!file.exists()) {
 
@@ -124,6 +113,11 @@ public class MainActivity extends AppCompatActivity {
         setupViewPager(viewPager);
     }
 
+    @Override
+    public void onInputSent(CharSequence date_ddMMMMyyyy, CharSequence date, CharSequence dateChiffre) {
+        homeFragment.updateEditText( date_ddMMMMyyyy,  date,  dateChiffre);
+    }
+
     //create the different Fragments to switch between
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -132,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
         shopFragment = new ShopFragment();
         adapter.addFragment(homeFragment);
         adapter.addFragment(ticketFragment);
-        //adapter.addFragment(paymentFragment);
         adapter.addFragment(shopFragment);
         viewPager.setAdapter(adapter);
     }
@@ -148,20 +141,12 @@ public class MainActivity extends AppCompatActivity {
                     switch (menuItem.getItemId()) {
                         case R.id.nav_home:
                             viewPager.setCurrentItem(0);
-                            //toolbar.setTitle("CCE Home");
-
                             break;
                         case R.id.nav_ticket:
                             viewPager.setCurrentItem(1);
-                            //toolbar.setTitle("Ticket");
                             break;
-                        /*case R.id.nav_pay:
-                            viewPager.setCurrentItem(2);
-                            toolbar.setTitle("Payement");
-                            break;*/
                         case R.id.nav_shop:
                             viewPager.setCurrentItem(2);
-                            //toolbar.setTitle("Course");
                             break;
                     }
                     return true;
@@ -208,5 +193,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 
 }

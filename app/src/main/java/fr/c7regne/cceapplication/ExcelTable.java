@@ -1,7 +1,6 @@
 package fr.c7regne.cceapplication;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -27,14 +26,12 @@ public class ExcelTable {
     private Workbook wb;
 
     public ExcelTable(Workbook workbook) {
-        Log.i("Excel", "2ndconstructor");
         if (workbook == null)
             throw new IllegalArgumentException("Book title can't be null");
         this.wb = workbook;
     }
 
     public ExcelTable() {
-        Log.i("Exceltest", "1stconstructor");
         Workbook workbook = new HSSFWorkbook();
 
         CellStyle cellStyle = workbook.createCellStyle();
@@ -199,6 +196,10 @@ public class ExcelTable {
 
         cell = row.createCell(5);
         cell.setCellValue("Descriptif");
+        cell.setCellStyle(cellStyle);
+
+        cell = row.createCell(6);
+        cell.setCellValue("ID");
         cell.setCellStyle(cellStyle);
 
         cell = row.createCell(7);
@@ -456,23 +457,23 @@ public class ExcelTable {
         cell = row.getCell(2);
         cell.setCellValue(cell.getNumericCellValue() + repasST);
         //recette soirée fictif
-        double val;
-        if (dette && !remboursement) {
+
+        if (dette && !remboursement && (repasAT!=0 || repasST!=0)) {
             cell = row.getCell(3);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //dette soirée fictif
-        if (!dette) {
+        if (!dette && !remboursement &&  repasST!=0) {
             cell = row.getCell(4);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //gain soirée fictif
-        if (!remboursement) {
+        if (!remboursement && (repasAT!=0 || repasST!=0)) {
             cell = row.getCell(5);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //recette soirée réel
-        if (dette || remboursement) {
+        if (remboursement || (repasAT==0 && repasST==0 && dette )  || repasST!=0 && dette ) {
             cell = row.getCell(6);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
@@ -480,16 +481,16 @@ public class ExcelTable {
         //tjrs a la ligne 1
         row = sheet.getRow(1);
         //recette totale
-        if (dette || remboursement) {
+        if ((repasAT==0 && repasST==0 && dette )  || repasST!=0 && dette || remboursement) {
             cell = row.getCell(8);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //Dette totale
-        if (!dette) {
+        if (!dette && !remboursement && (repasST!=0 || (repasAT==0 && repasST==0))) {
             cell = row.getCell(9);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
-        if (remboursement) {
+        if (dette && remboursement && repasAT==0 && repasST==0 ) {
             cell = row.getCell(9);
             cell.setCellValue(cell.getNumericCellValue() - montant);
         }
@@ -614,6 +615,10 @@ public class ExcelTable {
         cell = row.createCell(5);
         cell.setCellValue(descriptifAchatCourse);
 
+        //id
+        cell = row.createCell(6);
+        cell.setCellValue(lastRow-1);
+
         row = sheet.getRow(1);
         //Total course
         cell = row.getCell(7);
@@ -626,7 +631,7 @@ public class ExcelTable {
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
     }
 
-    public static void updateCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse) {
+    public static void updateCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse, double id) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.achat_course));
         Row row;
@@ -634,8 +639,8 @@ public class ExcelTable {
         CellStyle styleColorTrue = workbook.createCellStyle();
         styleColorTrue.setFillBackgroundColor(HSSFColor.GREEN.index);
         styleColorTrue.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-        Log.i("eaaaaaaaaaaaaaaaaaaa", fullDate + nomAchatCourse + montantAchatCourse);
-        row = findCourse(sheet, fullDate, nomAchatCourse, montantAchatCourse);
+
+        row = findCourse(sheet, fullDate, nomAchatCourse, montantAchatCourse, id);
 
         //remboursement
         cell = row.getCell(4);
@@ -651,14 +656,16 @@ public class ExcelTable {
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
     }
 
-    private static Row findCourse(Sheet sheet, String date, String prenom, double montant) {
+    private static Row findCourse(Sheet sheet, String date, String prenom, double montant, double id) {
         Row row = null;
         for (Row r : sheet) {
             if (getCellContent(r, 0).equals(date)) {
                 if (getCellContent(r, 1).equals(prenom)) {
                     if (r.getCell(2).getNumericCellValue() == montant) {
-                        row = r;
-                        break;
+                        if (r.getCell(6).getNumericCellValue() == id) {
+                            row = r;
+                            break;
+                        }
                     }
                 }
             }
@@ -667,13 +674,6 @@ public class ExcelTable {
     }
 //////////////////////////////////////////////////////////Manipulation tableau///////////////////////////////////////////////////////////////////////////////////////::
 
-    public static String getCellContent(@NotNull Workbook workbook, int sheet, int row, int cell) {
-        String content;
-        DataFormatter dataFormatter = new DataFormatter();
-        Cell c = workbook.getSheetAt(sheet).getRow(row).getCell(cell);
-        content = dataFormatter.formatCellValue(c);
-        return content;
-    }
 
     public static String getCellContent(@NotNull Sheet sheet, int row, int cell) {
         String content;
@@ -710,26 +710,5 @@ public class ExcelTable {
         return sheet.getLastRowNum();
     }
 
-    public static int numberCell(Row row) {
-        return row.getLastCellNum();
-    }
 
-
-
-
-
-
-
-
-
-    /*
-    public static Sheet sizeColumn(Sheet sheet){
-        int columnNumber = sheet.getRow(0).getLastCellNum();
-        Log.i("column",String.valueOf(columnNumber));
-        for(int i=0; i==columnNumber;i++){
-            sheet.autoSizeColumn(i, true);
-            sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 600);
-        }
-        return  sheet;
-    }*/
 }
