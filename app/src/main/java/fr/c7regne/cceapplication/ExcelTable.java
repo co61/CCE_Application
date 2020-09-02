@@ -1,7 +1,6 @@
 package fr.c7regne.cceapplication;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -11,7 +10,6 @@ import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -20,6 +18,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -27,14 +26,12 @@ public class ExcelTable {
     private Workbook wb;
 
     public ExcelTable(Workbook workbook) {
-        Log.i("Excel", "2ndconstructor");
         if (workbook == null)
             throw new IllegalArgumentException("Book title can't be null");
         this.wb = workbook;
     }
 
     public ExcelTable() {
-        Log.i("Exceltest", "1stconstructor");
         Workbook workbook = new HSSFWorkbook();
 
         CellStyle cellStyle = workbook.createCellStyle();
@@ -117,8 +114,6 @@ public class ExcelTable {
         cell.setCellStyle(cellStyle);
 
 
-
-
         cell = row.createCell(8);
         cell.setCellValue("Recette totale réelle");
         cell.setCellStyle(cellStyleTotal);
@@ -169,7 +164,7 @@ public class ExcelTable {
         cell.setCellValue("Total");
         cell.setCellStyle(cellStyleTotal);
 
-        row=ticketSheet.createRow(1);
+        row = ticketSheet.createRow(1);
         cell = row.createCell(7);
         cell.setCellValue(0);
         cell.setCellStyle(styleDouble);
@@ -203,6 +198,10 @@ public class ExcelTable {
         cell.setCellValue("Descriptif");
         cell.setCellStyle(cellStyle);
 
+        cell = row.createCell(6);
+        cell.setCellValue("ID");
+        cell.setCellStyle(cellStyle);
+
         cell = row.createCell(7);
         cell.setCellValue("Total");
         cell.setCellStyle(cellStyleTotal);
@@ -221,7 +220,6 @@ public class ExcelTable {
         cell.setCellStyle(styleDouble);
 
 
-
         this.wb = workbook;
     }
 
@@ -236,12 +234,14 @@ public class ExcelTable {
             outputStream = new FileOutputStream(file);
             wb.write(outputStream);
             Toast.makeText(context, "XLS File Updated", Toast.LENGTH_LONG).show();
+            wb.close();
+            outputStream.close();
         } catch (java.io.IOException e) {
             e.printStackTrace();
-
             Toast.makeText(context, "Failed to update XLS file", Toast.LENGTH_LONG).show();
             try {
                 outputStream.close();
+                wb.close();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -267,22 +267,24 @@ public class ExcelTable {
     }
 
     //////////////////////////////////////////////////////////Compte membre///////////////////////////////////////////////////////////////////////////////////////::
-    public static boolean checkNotMember(Context context, String nom, String prenom) {
+
+
+
+    public static boolean checkNotMember(Context context, String prenom) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_membre));
         for (Row r : sheet) {
-            if (getCellContent(r, 0).equals(nom)) {
-                if (getCellContent(r, 1).equals(prenom)) {
-                    return false;
-                }
+            if (getCellContent(r, 1).equals(prenom)) {
+                return false;
             }
+
         }
         return true;
     }
 
 
     @NotNull
-    public static Workbook createNewMember(Context context, String nom, String prenom, int repasAT, int repasST, double montant, boolean dette) {
+    public static Workbook createNewMember(Context context, String prenom, String date) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_membre));
         CellStyle styleDouble = workbook.createCellStyle();
@@ -291,9 +293,7 @@ public class ExcelTable {
         Cell cell;
         int lastRow = sheet.getLastRowNum() + 1;
         row = sheet.createRow(lastRow);
-        //name
-        cell = row.createCell(0);
-        cell.setCellValue(nom);
+
         //surname
         cell = row.createCell(1);
         cell.setCellValue(prenom);
@@ -302,31 +302,25 @@ public class ExcelTable {
         cell.setCellValue(0);
         //st
         cell = row.createCell(3);
-        cell.setCellValue(repasST);
+        cell.setCellValue(0);
         //dette
         cell = row.createCell(4);
         cell.setCellStyle(styleDouble);
-        if (!dette) {
-            cell.setCellValue(montant);
-        } else {
-            cell.setCellValue(0);
-        }
+        cell.setCellValue(0);
+
 
         cell = row.createCell(5);
         cell.setCellStyle(styleDouble);
         cell.setCellValue(3.0);
 
         cell = row.createCell(6);
-        cell.setCellStyle(styleDouble);
-        cell.setCellValue(0);
+        cell.setCellValue(date);
 
         Sheet sheetTicket = workbook.getSheetAt(context.getResources().getInteger(R.integer.controle_achat_ticket));
 
         lastRow = sheetTicket.getLastRowNum() + 1;
         row = sheetTicket.createRow(lastRow);
-        //name
-        cell = row.createCell(0);
-        cell.setCellValue(nom);
+
         //surname
         cell = row.createCell(1);
         cell.setCellValue(prenom);
@@ -350,16 +344,17 @@ public class ExcelTable {
     }
 
     @NotNull
-    public static Workbook updateMember(Context context, String nom, String prenom, int repasAT, int repasST, double montant, boolean dette, String date) {
+    public static Workbook updateMember(Context context, String prenom, int repasAT, int repasST, double montant, boolean dette, String date) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_membre));
 
+
         Cell cell;
-        Row row = findMember(sheet, nom, prenom);
+        Row row = findMember(sheet, prenom);
         //Repas nb at
 
         cell = row.getCell(2);
-        int varAT= (int) cell.getNumericCellValue();
+        int varAT = (int) cell.getNumericCellValue();
         if (repasAT != 0) {
             if ((int) cell.getNumericCellValue() > 0) {
                 varAT = (int) (cell.getNumericCellValue() - repasAT);
@@ -370,24 +365,23 @@ public class ExcelTable {
 
         //st
         cell = row.getCell(3);
-        int varST=(int) cell.getNumericCellValue();
+        int varST = (int) cell.getNumericCellValue();
         if (repasST != 0) {
-            varST=(int)(cell.getNumericCellValue() + repasST);
+            varST = (int) (cell.getNumericCellValue() + repasST);
         }
         cell.setCellValue(varST);
 
         //dette
         cell = row.getCell(4);
-        double val=cell.getNumericCellValue();
+        double val = cell.getNumericCellValue();
         if (!dette) {
-             val= cell.getNumericCellValue() + montant;
+            val = cell.getNumericCellValue() + montant;
 
         }
         cell.setCellValue(val);
 
         cell = row.getCell(6);
         cell.setCellValue(date);
-
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
         return workbook;
@@ -396,22 +390,15 @@ public class ExcelTable {
 
 
 
-    /*public static void updateDues(Context context, double montant,String nom, String prenom) {
-        Workbook workbook = readFile(context);
-        Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_membre));
 
-        Cell cell;
-        Row row = findMember(sheet, nom, prenom);
-    }*/
-
-    public static Row findMember(@NotNull Sheet sheet, String nom, String prenom) {
+    public static Row findMember(@NotNull Sheet sheet, String prenom) {
         Row row = null;
         for (Row r : sheet) {
-            if (getCellContent(r, 0).equals(nom)) {
+
                 if (getCellContent(r, 1).equals(prenom)) {
                     row = r;
                     break;
-                }
+
             }
         }
         return row;
@@ -450,7 +437,6 @@ public class ExcelTable {
         cell.setCellValue(0.0);
 
 
-
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
         return workbook;
 
@@ -471,23 +457,23 @@ public class ExcelTable {
         cell = row.getCell(2);
         cell.setCellValue(cell.getNumericCellValue() + repasST);
         //recette soirée fictif
-        double val;
-        if(dette && !remboursement){
+
+        if (dette && !remboursement && (repasAT!=0 || repasST!=0)) {
             cell = row.getCell(3);
-            cell.setCellValue(cell.getNumericCellValue()+ montant);
+            cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //dette soirée fictif
-        if(!dette){
+        if (!dette && !remboursement &&  repasST!=0) {
             cell = row.getCell(4);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //gain soirée fictif
-        if(!remboursement) {
+        if (!remboursement && (repasAT!=0 || repasST!=0)) {
             cell = row.getCell(5);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //recette soirée réel
-        if(dette || remboursement) {
+        if (remboursement || (repasAT==0 && repasST==0 && dette )  || repasST!=0 && dette ) {
             cell = row.getCell(6);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
@@ -495,16 +481,16 @@ public class ExcelTable {
         //tjrs a la ligne 1
         row = sheet.getRow(1);
         //recette totale
-        if(dette || remboursement){
+        if ((repasAT==0 && repasST==0 && dette )  || repasST!=0 && dette || remboursement) {
             cell = row.getCell(8);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //Dette totale
-        if (!dette) {
+        if (!dette && !remboursement && (repasST!=0 || (repasAT==0 && repasST==0))) {
             cell = row.getCell(9);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
-        if (remboursement) {
+        if (dette && remboursement && repasAT==0 && repasST==0 ) {
             cell = row.getCell(9);
             cell.setCellValue(cell.getNumericCellValue() - montant);
         }
@@ -537,48 +523,49 @@ public class ExcelTable {
         }
         return null;
     }
+
     //////////////////////////////////////////////////////////Comptes ticketé"///////////////////////////////////////////////////////////////////////////////////////::
-    public static Workbook updateTicket(Context context, String nom, String prenom, String date, int nbTicketAchat, double montantTicket, boolean b) {
+    public static Workbook updateTicket(Context context,String prenom, String date, int nbTicketAchat, double montantTicket, boolean b) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.controle_achat_ticket));
 
         Row row;
         Cell cell;
 
-        row = FindMemberTicketSheet(sheet, nom, prenom);
+        row = FindMemberTicketSheet(sheet, prenom);
 
         //date last purchase
         cell = row.getCell(2);
         cell.setCellValue(date);
         //nb ticket bought
         cell = row.getCell(3);
-        int val = (int)cell.getNumericCellValue() + nbTicketAchat;
+        int val = (int) cell.getNumericCellValue() + nbTicketAchat;
         cell.setCellValue(val);
         //last time ticket quantity
         cell = row.getCell(4);
         cell.setCellValue(nbTicketAchat);
         //total ticket money
         cell = row.getCell(5);
-        cell.setCellValue(cell.getNumericCellValue()+montantTicket);
+        cell.setCellValue(cell.getNumericCellValue() + montantTicket);
 
         //total always at 1st line
         row = sheet.getRow(1);
         cell = row.getCell(7);
-        cell.setCellValue(cell.getNumericCellValue()+montantTicket);
+        cell.setCellValue(cell.getNumericCellValue() + montantTicket);
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
         return workbook;
     }
 
-    private static Row FindMemberTicketSheet(Sheet sheet, String nom, String prenom) {
+    private static Row FindMemberTicketSheet(Sheet sheet, String prenom) {
         Row row = null;
         for (Row r : sheet) {
-            if (getCellContent(r, 0).equals(nom)) {
+
                 if (getCellContent(r, 1).equals(prenom)) {
                     row = r;
                     break;
                 }
-            }
+
         }
         return row;
     }
@@ -619,7 +606,7 @@ public class ExcelTable {
             cell = row.createCell(4);
             cell.setCellValue("Remboursé");
             cell.setCellStyle(styleColorTrue);
-        }else{
+        } else {
             cell = row.createCell(4);
             cell.setCellValue("Non Remboursé");
             cell.setCellStyle(styleColorFalse);
@@ -628,19 +615,23 @@ public class ExcelTable {
         cell = row.createCell(5);
         cell.setCellValue(descriptifAchatCourse);
 
+        //id
+        cell = row.createCell(6);
+        cell.setCellValue(lastRow-1);
+
         row = sheet.getRow(1);
         //Total course
         cell = row.getCell(7);
-        cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
-        if(checkboxAchatCourse){
+        cell.setCellValue(cell.getNumericCellValue() + montantAchatCourse);
+        if (checkboxAchatCourse) {
             cell = row.getCell(8);
-            cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
+            cell.setCellValue(cell.getNumericCellValue() + montantAchatCourse);
         }
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
     }
 
-    public static void updateCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse) {
+    public static void updateCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse, double id) {
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.achat_course));
         Row row;
@@ -648,8 +639,8 @@ public class ExcelTable {
         CellStyle styleColorTrue = workbook.createCellStyle();
         styleColorTrue.setFillBackgroundColor(HSSFColor.GREEN.index);
         styleColorTrue.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);
-        Log.i("eaaaaaaaaaaaaaaaaaaa",fullDate+nomAchatCourse+montantAchatCourse);
-        row = findCourse(sheet,fullDate,nomAchatCourse,montantAchatCourse);
+
+        row = findCourse(sheet, fullDate, nomAchatCourse, montantAchatCourse, id);
 
         //remboursement
         cell = row.getCell(4);
@@ -659,20 +650,22 @@ public class ExcelTable {
         row = sheet.getRow(1);
         //Total course remboursé
         cell = row.getCell(8);
-        cell.setCellValue(cell.getNumericCellValue()+montantAchatCourse);
+        cell.setCellValue(cell.getNumericCellValue() + montantAchatCourse);
 
 
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
     }
 
-    private static Row findCourse(Sheet sheet, String date, String prenom, double montant) {
+    private static Row findCourse(Sheet sheet, String date, String prenom, double montant, double id) {
         Row row = null;
         for (Row r : sheet) {
             if (getCellContent(r, 0).equals(date)) {
                 if (getCellContent(r, 1).equals(prenom)) {
-                    if (r.getCell(2).getNumericCellValue()==montant) {
-                        row = r;
-                        break;
+                    if (r.getCell(2).getNumericCellValue() == montant) {
+                        if (r.getCell(6).getNumericCellValue() == id) {
+                            row = r;
+                            break;
+                        }
                     }
                 }
             }
@@ -681,13 +674,6 @@ public class ExcelTable {
     }
 //////////////////////////////////////////////////////////Manipulation tableau///////////////////////////////////////////////////////////////////////////////////////::
 
-    public static String getCellContent(@NotNull Workbook workbook, int sheet, int row, int cell) {
-        String content;
-        DataFormatter dataFormatter = new DataFormatter();
-        Cell c = workbook.getSheetAt(sheet).getRow(row).getCell(cell);
-        content = dataFormatter.formatCellValue(c);
-        return content;
-    }
 
     public static String getCellContent(@NotNull Sheet sheet, int row, int cell) {
         String content;
@@ -710,7 +696,8 @@ public class ExcelTable {
         Workbook workbook = null;
         file = new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name));
         try {
-            workbook = WorkbookFactory.create(file);
+            FileInputStream inputStream = new FileInputStream(file);
+            workbook = WorkbookFactory.create(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InvalidFormatException e) {
@@ -723,26 +710,5 @@ public class ExcelTable {
         return sheet.getLastRowNum();
     }
 
-    public static int numberCell(Row row) {
-        return row.getLastCellNum();
-    }
 
-
-
-
-
-
-
-
-
-    /*
-    public static Sheet sizeColumn(Sheet sheet){
-        int columnNumber = sheet.getRow(0).getLastCellNum();
-        Log.i("column",String.valueOf(columnNumber));
-        for(int i=0; i==columnNumber;i++){
-            sheet.autoSizeColumn(i, true);
-            sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 600);
-        }
-        return  sheet;
-    }*/
 }

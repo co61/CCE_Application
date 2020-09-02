@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -109,7 +108,8 @@ public class ShopFragment extends Fragment {
         int nbRow = ExcelTable.numberRow(sheet);
         for (int i = 2; i < nbRow + 1; i++) {
             data.add(ExcelTable.getCellContent(sheet, i, 0)+"¤"+ExcelTable.getCellContent(sheet, i, 1)+
-                    "¤"+"Dette : "+ExcelTable.getCellContent(sheet, i, 2)+"¤"+ExcelTable.getCellContent(sheet, i, 4));
+                    "¤"+"Dette : "+ExcelTable.getCellContent(sheet, i, 2)+"¤"+ExcelTable.getCellContent(sheet, i, 4)
+            +"¤"+ExcelTable.getCellContent(sheet,i,6));
         }
     }
 
@@ -141,10 +141,11 @@ public class ShopFragment extends Fragment {
             mainViewholder.button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "Button was clicked for list item " + position, Toast.LENGTH_SHORT).show();
                     ExcelTable.updateCourse(getContext(),mObjects.get(position).split("¤")[0],
                             mObjects.get(position).split("¤")[1],
-                            Double.parseDouble(mObjects.get(position).split("¤")[2].split(" : ")[1]));
+                            Double.parseDouble(mObjects.get(position).split("¤")[2].split(" : ")[1]),
+                            Double.parseDouble(mObjects.get(position).split("¤")[4]));
+                    Toast.makeText(getContext(), "Remboursement effectué", Toast.LENGTH_SHORT).show();
                     generateListContent();
                     lv.setAdapter(new MyListAdaper(getContext(), R.layout.list_item, data));
                 }
