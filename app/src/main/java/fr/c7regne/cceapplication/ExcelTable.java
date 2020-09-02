@@ -53,9 +53,7 @@ public class ExcelTable {
         peopleAccountSheet = workbook.createSheet("Compte Membres");
 
         row = peopleAccountSheet.createRow(0);
-        cell = row.createCell(0);
-        cell.setCellValue("Nom");
-        cell.setCellStyle(cellStyle);
+
 
         cell = row.createCell(1);
         cell.setCellValue("Prénom");
@@ -136,9 +134,6 @@ public class ExcelTable {
         ticketSheet = workbook.createSheet("Contrôle achat ticket");
         row = ticketSheet.createRow(0);
 
-        cell = row.createCell(0);
-        cell.setCellValue("Nom");
-        cell.setCellStyle(cellStyle);
 
         cell = row.createCell(1);
         cell.setCellValue("Prénom");
