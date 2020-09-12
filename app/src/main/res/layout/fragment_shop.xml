@@ -63,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:checked="true"
-            android:text="Payé" />
+            android:text="Remboursé" />
 
         <Button
             android:id="@+id/buttonValidationAchatCourse"
