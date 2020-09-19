@@ -287,7 +287,7 @@ public class TicketFragment extends Fragment implements DatePickerDialog.OnDateS
                                     Integer.parseInt(nbTicketAchat.getText().toString()),
                                     Double.parseDouble(reducctionTicket.getText().toString()),
                                     checkboxAT.isChecked());
-                            ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 0, 0,
+                            ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 1000, 1000,
                                     Double.parseDouble(reducctionTicket.getText().toString()), checkboxAT.isChecked(), false);
                             nbTicketAchat.setText("7");
                             reducctionTicket.setText("21");
@@ -313,7 +313,7 @@ public class TicketFragment extends Fragment implements DatePickerDialog.OnDateS
                                 if (montant != 0) {
                                     r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
                                     ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
-                                    ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 0, 0, montant, true, true);
+                                    ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 999, 999, montant, true, true);
                                     detteinfoAT.setText("Dette : " + r.getCell(4).getNumericCellValue());
                                     montantDetteRemboursementAT.setText("0.0");
                                     //spinners = spinnerView();
@@ -401,7 +401,7 @@ public class TicketFragment extends Fragment implements DatePickerDialog.OnDateS
                                 if (montant != 0) {
                                     r.getCell(4).setCellValue(r.getCell(4).getNumericCellValue() - montant);
                                     ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
-                                    ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 0, 0, montant, true, true);
+                                    ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 999, 999, montant, true, true);
                                     detteinfoST.setText("Dette : " + r.getCell(4).getNumericCellValue());
                                     montantDetteRemboursementST.setText("0.0");
                                     hideKeyboardFrom(getContext(), v);

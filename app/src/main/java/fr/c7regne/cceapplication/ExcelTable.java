@@ -468,7 +468,7 @@ public class ExcelTable {
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //recette soirée réel
-        if (remboursement || (repasAT==0 && repasST==0 && dette )  || repasST!=0 && dette ) {
+        if ((remboursement && repasAT==999 && repasST==999 && dette) || (repasAT==1000 && repasST==1000 && dette )  || (repasST!=0 && dette )) {
             cell = row.getCell(6);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
@@ -476,16 +476,16 @@ public class ExcelTable {
         //tjrs a la ligne 1
         row = sheet.getRow(1);
         //recette totale
-        if ((repasAT==0 && repasST==0 && dette )  || repasST!=0 && dette || remboursement) {
+        if ((repasAT==1000 && repasST==1000 && dette )  || (repasST!=0 && dette) || remboursement) {
             cell = row.getCell(8);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //Dette totale
-        if (!dette && !remboursement && (repasST!=0 || (repasAT==0 && repasST==0))) {
+        if (!dette && !remboursement ) {
             cell = row.getCell(9);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
-        if (dette && remboursement && repasAT==0 && repasST==0 ) {
+        if (dette && remboursement && repasAT==999 && repasST==999 ) {
             cell = row.getCell(9);
             cell.setCellValue(cell.getNumericCellValue() - montant);
         }
