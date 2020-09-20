@@ -1,6 +1,7 @@
 package fr.c7regne.cceapplication;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -446,29 +447,39 @@ public class ExcelTable {
         //search row of the evening
         row = findEvening(sheet, date);
         //Repas nb at
-        cell = row.getCell(1);
-        cell.setCellValue(cell.getNumericCellValue() + repasAT);
+        if (repasAT<999) {
+            assert row != null;
+            cell = row.getCell(1);
+            cell.setCellValue(cell.getNumericCellValue() + repasAT);
+        }
         //st
-        cell = row.getCell(2);
-        cell.setCellValue(cell.getNumericCellValue() + repasST);
+        if (repasST<999) {
+            assert row != null;
+            cell = row.getCell(2);
+            cell.setCellValue(cell.getNumericCellValue() + repasST);
+        }
         //recette soirée fictif
 
-        if (dette && !remboursement && (repasAT!=0 || repasST!=0)) {
+        if (dette && !remboursement && (repasAT!=0 || repasST!=0) && repasAT<999 && repasST<999) {
+            Log.i("recette soirée ", String.valueOf(montant));
             cell = row.getCell(3);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //dette soirée fictif
-        if (!dette && !remboursement &&  repasST!=0) {
+        if (!dette && !remboursement &&  repasST!=0 && repasAT<999 && repasST<999) {
+            Log.i("dette soirée ", String.valueOf(montant));
             cell = row.getCell(4);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //gain soirée fictif
-        if (!remboursement && (repasAT!=0 || repasST!=0)) {
+        if (!remboursement && (repasAT!=0 || repasST!=0) && repasAT<999 && repasST<999) {
+            Log.i("gain soirée ", String.valueOf(montant));
             cell = row.getCell(5);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }
         //recette soirée réel
         if ((remboursement && repasAT==999 && repasST==999 && dette) || (repasAT==1000 && repasST==1000 && dette )  || (repasST!=0 && dette )) {
+            Log.i("recette reel soirée ", String.valueOf(montant));
             cell = row.getCell(6);
             cell.setCellValue(cell.getNumericCellValue() + montant);
         }

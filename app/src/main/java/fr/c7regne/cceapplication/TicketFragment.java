@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.icu.text.DecimalFormat;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -280,13 +281,13 @@ public class TicketFragment extends Fragment implements DatePickerDialog.OnDateS
                             if (!checkboxAT.isChecked()) {
                                 cell = r.getCell(4);
                                 cell.setCellValue(cell.getNumericCellValue() + Double.parseDouble(reducctionTicket.getText().toString()));
-                                checkboxAT.setChecked(true);
                             }
                             ExcelTable.saveFile(getContext(), workbook, new File(getContext().getExternalFilesDir(null), getContext().getResources().getString(R.string.file_name)));
                             ExcelTable.updateTicket(getContext(), item, date_ddMMMMyyyy,
                                     Integer.parseInt(nbTicketAchat.getText().toString()),
                                     Double.parseDouble(reducctionTicket.getText().toString()),
                                     checkboxAT.isChecked());
+                            Log.i("eeeeeeeeeeee", String.valueOf(checkboxAT.isChecked()));
                             ExcelTable.updateEvening(getContext(), date_ddMMMMyyyy, 1000, 1000,
                                     Double.parseDouble(reducctionTicket.getText().toString()), checkboxAT.isChecked(), false);
                             nbTicketAchat.setText("7");
@@ -295,11 +296,15 @@ public class TicketFragment extends Fragment implements DatePickerDialog.OnDateS
                             //spinners = spinnerView();
                             Toast.makeText(getContext(), "Tickets ajoutés", Toast.LENGTH_SHORT).show();
                             ajoutticket.setClickable(false);
+                            checkboxAT.setChecked(true);
+                            detteinfoAT.setText("Dette : " + r.getCell(4).getNumericCellValue());
+
                         }
                     });
                     //ExcelTable.updateTicket();
                     //update dues
                     detteinfoAT.setText("Dette : " + r.getCell(4).getNumericCellValue());
+                    Log.i("Dette : " , String.valueOf(r.getCell(4).getNumericCellValue()));
                     if (r.getCell(4).getNumericCellValue() == 0) {
                         montantDetteRemboursementAT.setEnabled(false);
                         buttonRembourserAT.setClickable(false);
