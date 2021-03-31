@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
 public class ShopFragment extends Fragment {
@@ -86,6 +84,11 @@ public class ShopFragment extends Fragment {
                     generateListContent();
                     lv.setAdapter(new MyListAdaper(getContext(), R.layout.list_item, data));
                     Toast.makeText(getContext(), "Course ajoutée", Toast.LENGTH_SHORT).show();
+                    nomAchatCourse.setText(null);
+                    montantAchatCourse.setText(null);
+                    numTicketAchatCourse.setText(null);
+                    descriptifAchatCourse.setText(null);
+                    checkboxAchatCourse.setChecked(true);
                 }else {
                     Toast.makeText(getContext(), "Veuillez rentrer au moins un montant", Toast.LENGTH_SHORT).show();
                 }

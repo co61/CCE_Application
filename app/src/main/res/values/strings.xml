@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">CCE application</string>
     <string name="file_name">CCETresorerieRepas.xls</string>
+    <string name="save_file_name">save_CCETresorerieRepas.xls</string>
     <string name="prix_repas">3.0</string>
 
 </resources>

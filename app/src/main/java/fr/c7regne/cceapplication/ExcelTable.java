@@ -1,29 +1,32 @@
-package fr.c7regne.cceapplication;
+ package fr.c7regne.cceapplication;
 
-import android.content.Context;
-import android.util.Log;
-import android.widget.Toast;
+ import android.content.Context;
+ import android.util.Log;
+ import android.widget.Toast;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.jetbrains.annotations.NotNull;
+ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+ import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+ import org.apache.poi.hssf.util.HSSFColor;
+ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+ import org.apache.poi.ss.usermodel.Cell;
+ import org.apache.poi.ss.usermodel.CellStyle;
+ import org.apache.poi.ss.usermodel.DataFormatter;
+ import org.apache.poi.ss.usermodel.Row;
+ import org.apache.poi.ss.usermodel.Sheet;
+ import org.apache.poi.ss.usermodel.Workbook;
+ import org.apache.poi.ss.usermodel.WorkbookFactory;
+ import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+ import java.io.File;
+ import java.io.FileInputStream;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.Comparator;
 
-public class ExcelTable {
+ public class ExcelTable {
     private Workbook wb;
 
     public ExcelTable(Workbook workbook) {
@@ -229,12 +232,12 @@ public class ExcelTable {
         try {
             outputStream = new FileOutputStream(file);
             wb.write(outputStream);
-            Toast.makeText(context, "XLS File Updated", Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, "XLS File Updated", Toast.LENGTH_LONG).show();
             wb.close();
             outputStream.close();
         } catch (java.io.IOException e) {
             e.printStackTrace();
-            Toast.makeText(context, "Failed to update XLS file", Toast.LENGTH_LONG).show();
+            //Toast.makeText(context, "Failed to update XLS file", Toast.LENGTH_LONG).show();
             try {
                 outputStream.close();
                 wb.close();
@@ -244,10 +247,12 @@ public class ExcelTable {
         }
     }
 
-    public static void createFile(Context context, Workbook wb, File file) {
+    public static void createFile(Context context, Workbook wb, File file, File saveFile) {
         FileOutputStream outputStream = null;
         try {
             outputStream = new FileOutputStream(file);
+            wb.write(outputStream);
+            outputStream = new FileOutputStream(saveFile);
             wb.write(outputStream);
             Toast.makeText(context, "XLS File Generated", Toast.LENGTH_LONG).show();
         } catch (java.io.IOException e) {
@@ -262,6 +267,13 @@ public class ExcelTable {
         }
     }
 
+     public static void copyFile(Context c) throws IOException {
+         FileInputStream excelFile = new FileInputStream(new File(c.getExternalFilesDir(null), c.getResources().getString(R.string.file_name)));
+         Workbook workbook = new HSSFWorkbook(excelFile);
+         FileOutputStream outputStream = new FileOutputStream(new File(c.getExternalFilesDir(null), c.getResources().getString(R.string.save_file_name)));
+         workbook.write(outputStream);
+         workbook.close();
+     }
     //////////////////////////////////////////////////////////Compte membre///////////////////////////////////////////////////////////////////////////////////////::
 
 
@@ -278,9 +290,67 @@ public class ExcelTable {
         return true;
     }
 
+    public static Workbook sortMember(Context c, Workbook workbook) {
+        try {
+            copyFile(c);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Sheet sheet = workbook.getSheetAt(c.getResources().getInteger(R.integer.compte_membre));
+        ArrayList<ArrayList> toSort = new ArrayList<ArrayList>();
+        for (int i = 1; i < sheet.getLastRowNum() +1; i++) {
+            ArrayList row = new ArrayList();
+            for (int j = 0; j < 7; j++) {
+                row.add(getCellValue(sheet.getRow(i).getCell(j)));
+            }
+            toSort.add(row);
+        }
+        Collections.sort(toSort, new Comparator<ArrayList>() {
+            @Override
+            public int compare(ArrayList o1, ArrayList o2) {
+                return ((String) o1.get(1)).compareTo((String) o2.get(1));
+            }
+        });
+        for (int i = 1; i < sheet.getLastRowNum() +1; i++) {
+            sheet.getRow(i).getCell(1).setCellValue((String)toSort.get(i-1).get(1));
+            sheet.getRow(i).getCell(2).setCellValue((double)toSort.get(i-1).get(2));
+            sheet.getRow(i).getCell(3).setCellValue((double)toSort.get(i-1).get(3));
+            sheet.getRow(i).getCell(4).setCellValue((double)toSort.get(i-1).get(4));
+            sheet.getRow(i).getCell(5).setCellValue((double)toSort.get(i-1).get(5));
+            sheet.getRow(i).getCell(6).setCellValue((String)toSort.get(i-1).get(6));
+        }
 
+        Sheet sheet_verif = workbook.getSheetAt(c.getResources().getInteger(R.integer.controle_achat_ticket));
+        ArrayList<ArrayList> toSort_verif = new ArrayList<ArrayList>();
+        for (int i = 2; i < sheet_verif.getLastRowNum() +1; i++) {
+            ArrayList row = new ArrayList();
+            for (int j = 0; j < 6; j++) {
+                row.add(getCellValue(sheet_verif.getRow(i).getCell(j)));
+            }
+            toSort_verif.add(row) ;
+        }
+        Collections.sort(toSort_verif, new Comparator<ArrayList>() {
+            @Override
+            public int compare(ArrayList o1, ArrayList o2) {
+                return ((String) o1.get(1)).compareTo((String) o2.get(1));
+            }
+        });
+        for (int i = 2; i < sheet_verif.getLastRowNum() +1; i++) {
+            sheet_verif.getRow(i).getCell(1).setCellValue((String)toSort_verif.get(i-2).get(1));
+            sheet_verif.getRow(i).getCell(2).setCellValue((String) toSort_verif.get(i-2).get(2));
+            sheet_verif.getRow(i).getCell(3).setCellValue((double)toSort_verif.get(i-2).get(3));
+            sheet_verif.getRow(i).getCell(4).setCellValue((double)toSort_verif.get(i-2).get(4));
+            sheet_verif.getRow(i).getCell(5).setCellValue((double)toSort_verif.get(i-2).get(5));
+        }
+        return workbook;
+    }
     @NotNull
     public static Workbook createNewMember(Context context, String prenom, String date) {
+        try {
+            copyFile(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_membre));
         CellStyle styleDouble = workbook.createCellStyle();
@@ -322,7 +392,7 @@ public class ExcelTable {
         cell.setCellValue(prenom);
         //date last purchase
         cell = row.createCell(2);
-        cell.setCellValue(0);
+        cell.setCellValue("NA");
         //nb ticket
         cell = row.createCell(3);
         cell.setCellValue(0);
@@ -334,13 +404,20 @@ public class ExcelTable {
         cell.setCellValue(0);
         cell.setCellStyle(styleDouble);
 
+        sortMember(context, workbook);
         saveFile(context, workbook, new File(context.getExternalFilesDir(null), context.getResources().getString(R.string.file_name)));
+
         return workbook;
 
     }
 
     @NotNull
     public static Workbook updateMember(Context context, String prenom, int repasAT, int repasST, double montant, boolean dette, String date) {
+        try {
+            copyFile(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_membre));
 
@@ -385,8 +462,6 @@ public class ExcelTable {
     }
 
 
-
-
     public static Row findMember(@NotNull Sheet sheet, String prenom) {
         Row row = null;
         for (Row r : sheet) {
@@ -403,6 +478,11 @@ public class ExcelTable {
     //////////////////////////////////////////////////////////Compte soirée///////////////////////////////////////////////////////////////////////////////////////::
     @NotNull
     public static Workbook createNewEvening(Context context, String date) {
+        try {
+            copyFile(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_rendu_soiree));
         CellStyle styleDouble = workbook.createCellStyle();
@@ -440,6 +520,11 @@ public class ExcelTable {
 
     @NotNull
     public static Workbook updateEvening(Context context, String date, int repasAT, int repasST, double montant, boolean dette, boolean remboursement) {
+        try {
+            copyFile(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.compte_rendu_soiree));
         Row row;
@@ -532,6 +617,11 @@ public class ExcelTable {
 
     //////////////////////////////////////////////////////////Comptes ticketé"///////////////////////////////////////////////////////////////////////////////////////::
     public static Workbook updateTicket(Context context,String prenom, String date, int nbTicketAchat, double montantTicket, boolean b) {
+        try {
+            copyFile(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.controle_achat_ticket));
 
@@ -579,6 +669,11 @@ public class ExcelTable {
 //////////////////////////////////////////////////////////Course tableau///////////////////////////////////////////////////////////////////////////////////////::
 
     public static void createCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse, int numTicketAchatCourse, String descriptifAchatCourse, boolean checkboxAchatCourse) {
+        try {
+            copyFile(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.achat_course));
         CellStyle styleDouble = workbook.createCellStyle();
@@ -638,6 +733,11 @@ public class ExcelTable {
     }
 
     public static void updateCourse(Context context, String fullDate, String nomAchatCourse, double montantAchatCourse, double id) {
+        try {
+            copyFile(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Workbook workbook = readFile(context);
         Sheet sheet = workbook.getSheetAt(context.getResources().getInteger(R.integer.achat_course));
         Row row;
@@ -696,6 +796,26 @@ public class ExcelTable {
         content = dataFormatter.formatCellValue(c);
         return content;
     }
+     private static Object getCellValue(final Cell cell) {
+        if (cell==null){
+            return " ";
+        }
+         switch (cell.getCellTypeEnum()) {
+             case BOOLEAN:
+                 return cell.getBooleanCellValue(); // boolean
+             case ERROR:
+                 return cell.getErrorCellValue(); // byte
+             case NUMERIC:
+                 return cell.getNumericCellValue(); // double
+             case STRING:
+             case BLANK:
+                 return cell.getStringCellValue(); // String
+             case FORMULA:
+                 return  "=" + cell.getCellFormula(); // String for formula
+             default:
+                 throw new IllegalArgumentException();
+         }
+     }
 
     public static Workbook readFile(@NotNull Context context) {
         File file;

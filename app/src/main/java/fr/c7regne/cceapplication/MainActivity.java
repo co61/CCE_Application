@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements TicketFragment.Ti
         if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             File file = new File(getExternalFilesDir(null), getResources().getString(R.string.file_name));
+            File saveFile = new File(getExternalFilesDir(null), getResources().getString(R.string.save_file_name));
 
             //check if the file exist
             if (!file.exists()) {
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements TicketFragment.Ti
                 excelTable = new ExcelTable();
                 Workbook wb = excelTable.getOriginal();
                 //save file
-                ExcelTable.createFile(this, wb, file);
+                ExcelTable.createFile(this, wb, file, saveFile);
 
             } else { //if yes load the file
                 try {

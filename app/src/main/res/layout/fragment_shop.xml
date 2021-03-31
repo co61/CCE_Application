@@ -17,30 +17,28 @@
             android:textColor="@android:color/black"
             android:textSize="28sp" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="Ajouts"
-            android:textColor="@android:color/black"
-            android:textSize="24sp" />
+            android:orientation="horizontal">
+            <EditText
+                android:id="@+id/nomAchatCourse"
+                android:layout_width="0dp"
+                android:layout_weight="0.5"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:hint="Nom"
+                android:inputType="text" />
 
-        <EditText
-            android:id="@+id/nomAchatCourse"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:hint="Nom"
-            android:inputType="text" />
-
-        <EditText
-            android:id="@+id/montantAchatCourse"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="10dp"
-            android:hint="Montant"
-            android:inputType="numberDecimal" />
-
+            <EditText
+                android:id="@+id/montantAchatCourse"
+                android:layout_width="0dp"
+                android:layout_weight="0.5"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:hint="Montant"
+                android:inputType="numberDecimal" />
+        </LinearLayout>
         <EditText
             android:id="@+id/numTicketAchatCourse"
             android:layout_width="match_parent"
@@ -56,22 +54,28 @@
             android:layout_marginHorizontal="10dp"
             android:hint="Descriptif"
             android:inputType="text" />
-
-        <CheckBox
-            android:id="@+id/checkboxAchatCourse"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:checked="true"
-            android:text="Remboursé" />
+            android:orientation="horizontal">
+            <CheckBox
+                android:id="@+id/checkboxAchatCourse"
+                android:layout_width="0dp"
+                android:layout_weight="0.75"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:checked="true"
+                android:text="Remboursé" />
 
-        <Button
-            android:id="@+id/buttonValidationAchatCourse"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:layout_marginHorizontal="10dp"
-            android:text="Valider" />
+            <Button
+                android:id="@+id/buttonValidationAchatCourse"
+                android:layout_width="0dp"
+                android:layout_weight="0.25"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginHorizontal="10dp"
+                android:text="Valider" />
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
